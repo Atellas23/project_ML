@@ -26,7 +26,7 @@
 \usetikzlibrary{babel}                                                              % Avoids interference between tikz-cd i babel
 \usepackage{lipsum}                                                                 % Lorem ipsum dolor sit amet, with \lipsum or \lipsum[1]
 \usepackage{todonotes}                                                              % To indicate something is missing
-\usepackage[normalem]{ulem}   
+\usepackage[normalem]{ulem}
 
 
 \usepackage{amsthm}
@@ -64,24 +64,24 @@
 
 \section{Problem: \color{violet} Wine type and quality determination}
 
-In our for an interesting data set we found \href{http://archive.ics.uci.edu/ml/datasets/Wine+Quality}{this one} which immediately captured our attention. As the title states, this is a data set about wine quality, and given that oenology is a domain as ancient as it is complex, our ambitious aim is that of predicting the quality of a given wine; can we determine what are the features that can predict wine quality?
+In our quest for an interesting data set we found \href{http://archive.ics.uci.edu/ml/datasets/Wine+Quality}{this one} which immediately captured our attention. As the title states, this is a data set about wine quality, and given that oenology is a domain as ancient as it is complex, our ambitious aim is that of predicting the quality of a given wine; can we determine what are the features that can predict wine quality?
 \\ \ \\
-Looking at the information provided in the same webpage, we found that the input variables are all physicochemical components and properties of the wine, that is, intrinsic properties of the wine itself, without any commercial information. Therefore, it is a purely scientific analysis of the wine, ignoring matters such as the brand or the price.
+Looking at the information provided in the same webpage, we found that the input variables are all physicochemical components and properties of the wine, that is, intrinsic properties of the wine itself, without any commercial information. Therefore, it is a purely scientific analysis of the wine, ignoring matters such as brand or price.
 \\ \ \\
-Which objective chemical attributes of the wine influence, or help in predicting the subjective score (in a 0-10 scale) that the professional oenologists gave them, is what we found interesting. This is the problem that the web page suggested, but we decided to add an extra challenge. Seeing that there were two types of wines in the data set; red and white, we thought about tying to predict those attributes too. That is because, a priori, we don't know whether any physicochemical traits of the wine are different between the white or the red wine.
+Which objective chemical attributes of the wine influence or help in predicting the subjective score (in a 0-10 scale) that the professional oenologists gave them, is what we found interesting. This is the problem that the web page suggested, but we decided to add an extra challenge. Seeing that there were two types of wines in the data set, red and white, we thought about trying to predict those attributes too. That is because, a priori, we do not know whether any physicochemical traits of wine are different between white or red variants.
 \\ \ \\
 Therefore, this is our (double) final problem: determining the quality of a wine (which can be thought of as a regression problem) and also determining what is its type (which is a pure classification problem).
-\\ 
+\\
 \section{References:}
 \begin{enumerate}
   \item Web page where the data set can be found:
-  
-  \href{http://archive.ics.uci.edu/ml/datasets/Wine+Quality}{ http://archive.ics.uci.edu/ml/datasets/Wine+Quality}   
-  
-  \item Relevant paper (a previous approach): 
-  
+
+  \href{http://archive.ics.uci.edu/ml/datasets/Wine+Quality}{ http://archive.ics.uci.edu/ml/datasets/Wine+Quality}
+
+  \item Relevant paper (a previous approach):
+
   \href{https://www.sciencedirect.com/science/article/pii/S0167923609001377?via\%3Dihub}{ https://www.sciencedirect.com/science/article/pii/S0167923609001377?via\%3Dihub}
-  
+
   \item Source. Paulo Cortez, University of Minho, Guimarães, Portugal:
 
   \href{http://www3.dsi.uminho.pt/pcortez/Home.html}{ http://www3.dsi.uminho.pt/pcortez/Home.html}
