@@ -1,0 +1,98 @@
+\documentclass[10pt]{article}
+
+\usepackage{amsmath}                                                                % Math mode $-$ o $$-$$
+\usepackage{amssymb}                                                                % Mathematic symbols
+\usepackage{mathrsfs}                                                               % Caligraphic letters
+\usepackage{amsthm}                                                                 % Theorem-like environments
+
+\usepackage[english]{babel}                                                         % Language (it is important when hyphenating words)
+\usepackage[utf8]{inputenc}                                                         % Accented letters and other strange symbols
+
+\usepackage{graphicx}                                                               % Images
+\usepackage{float}                                                                  % Puts images where they belong
+\usepackage{subcaption}                                                             % Subimages
+\usepackage{wrapfig}                                                                % Text and image on the same line
+\usepackage{subfiles}                                                               % Subfiles
+\usepackage[hidelinks]{hyperref}                                                    % Allows external and internal references
+\usepackage[nameinlink]{cleveref}                                                   % Improves internal references
+\usepackage[super,square]{natbib}                                                   % Easy bibliography
+
+\usepackage{verbatim}                                                               % Verbatim + multiline comments
+\usepackage{anysize}\marginsize{2cm}{2cm}{.5cm}{4cm}                                % Personalizes margins: {L}{R}{U}{D}
+\usepackage{bbm}                                                                    % Allows \1
+\usepackage{mathdots}                                                               % Rising triple dot symbol
+\usepackage{faktor}                                                                 % Fancy rendering of coset sets
+\usepackage{tikz-cd}                                                                % Commutative diagrams
+\usetikzlibrary{babel}                                                              % Avoids interference between tikz-cd i babel
+\usepackage{lipsum}                                                                 % Lorem ipsum dolor sit amet, with \lipsum or \lipsum[1]
+\usepackage{todonotes}                                                              % To indicate something is missing
+\usepackage[normalem]{ulem}   
+
+
+\usepackage{amsthm}
+\usepackage{xcolor}
+\usepackage{tcolorbox}
+\newtcbox{\mybox}{on line,
+  colframe=blue,colback=blue!10!white,
+  boxrule=0.5pt,arc=4pt,boxsep=0pt,left=6pt,right=6pt,top=6pt,bottom=6pt}
+
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks = true,
+    filecolor = blue,
+    linkcolor = blue,
+    urlcolor = blue,
+}
+
+\thispagestyle{empty}
+
+\begin{document}
+\begingroup
+  \centering
+  \Huge Machine Learning \\
+  \vskip 0.5cm
+  \LARGE Project proposal\\[1.5em]
+\endgroup
+
+\section{Team members:}
+\begin{itemize}
+  \item Luis Sierra Muntané
+  \item Àlex Batlle Casellas
+  \item Aleix Torres i Camps
+\end{itemize}
+\vskip 0.3cm
+
+\section{Problem: \color{violet} Wine type and quality determination}
+
+Searching for a interesting data set we found \href{http://archive.ics.uci.edu/ml/datasets/Wine+Quality}{this one} that quickly intrigue us. Because the title says that it is a data set about wine quality, but only wine quality? Which are the features that can determine wine quality?
+\\ \ \\
+So looking at the information given in the same webpage, we found that the input variables are all physicochemical components and properties of the wine. So the wine itself, without commercial information. Therefore it is a pure scientific analysis of the wine, doesn't matter the brand or the price.
+\\ \ \\
+That is what we find interesting, which objective chemical attributes of the wine affect, or can help us predict the subjective punctuation (in a 0-10 scale) that the oenologists gave them. This is the problem that the web page suggest, but we decided to add extra challenge. We saw that there were two types of wines: red and white, so how about to predict wine type too? Because, a priori, we don't know which physicochemical traits of the wine make them white or red.
+\\ \ \\
+So, finally, this is our (double) final problem: determine the quality of the wine (which can be thought as a regression problem) and also determine which is its type (which is a pure classification problem).
+\\ 
+\section{References:}
+\begin{enumerate}
+  \item Web page where the data set can be found:
+  
+  \href{http://archive.ics.uci.edu/ml/datasets/Wine+Quality}{ http://archive.ics.uci.edu/ml/datasets/Wine+Quality}   
+  
+  \item Relevant paper (a previous approach): 
+  
+  \href{https://www.sciencedirect.com/science/article/pii/S0167923609001377?via\%3Dihub}{ https://www.sciencedirect.com/science/article/pii/S0167923609001377?via\%3Dihub}
+  
+  \item Source. Paulo Cortez, University of Minho, Guimarães, Portugal:
+
+  \href{http://www3.dsi.uminho.pt/pcortez/Home.html}{ http://www3.dsi.uminho.pt/pcortez/Home.html}
+
+  \item \textit{Vinho verde:} the winery where the wine came from:
+
+  \href{https://www.vinhoverde.pt/en/}{ https://www.vinhoverde.pt/en/}
+
+\end{enumerate}
+
+
+
+
+\end{document} 
