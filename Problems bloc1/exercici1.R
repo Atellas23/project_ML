@@ -31,11 +31,7 @@ a
 # (c)
 # pre: length(x)=length(y)
 euc = function(x, y, p = 2) {
-  n = length(x)
-  sum = 0
-  for (i in 1:n) {
-    sum = sum + abs(x[i]-y[i])^p
-  }
+  sum <- sum(abs(x - y)^p)
   return(sum^(1/p))
 }
 
