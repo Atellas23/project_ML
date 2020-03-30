@@ -8,10 +8,10 @@ normal = function(mu, sigma) {
 }
 
 mu <- rep(0, 4)
-sigma <- cbind(c(1,0,0,0), c(0,1,0,0), c(0,0,1,0), c(0,0,0,1))
+sigma <- cbind(c(2,1,0,0), c(1,3,0,0), c(0,0,3,0), c(0,0,0,1))
 sigma
-hola <- normal(mu, sigma)
-hola
+example <- normal(mu, sigma)
+example
 
 
 # (b)
@@ -22,8 +22,9 @@ calc_discr = function(x, p, mu, sigma) {
   dt = det(sigma)
   return(-0.5*t(xnorm)%*%inv%*%xnorm-d/2*log(2*pi)-0.5*log(dt)+log(p))
 }
-
+x = as.vector(c(1, 0, -1, 1))
 p = 0.3
+sigma = as.matrix(sigma)
 a = calc_discr(x, p, mu, sigma)
 a
 
@@ -55,3 +56,4 @@ mah = function(x, mu, sigma) {
 }
 
 mah(x,y,sigma)
+

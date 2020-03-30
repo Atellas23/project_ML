@@ -18,7 +18,7 @@
 \usepackage[super,square]{natbib}                                                   % Easy bibliography
 
 \usepackage{verbatim}                                                               % Verbatim + multiline comments
-\usepackage{anysize}\marginsize{2cm}{2cm}{.5cm}{4cm}                                % Personalizes margins: {L}{R}{U}{D}
+\usepackage{anysize}\marginsize{2cm}{2cm}{.5cm}{2cm}                                % Personalizes margins: {L}{R}{U}{D}
 \usepackage{bbm}                                                                    % Allows \1
 \usepackage{mathdots}                                                               % Rising triple dot symbol
 \usepackage{faktor}                                                                 % Fancy rendering of coset sets
@@ -84,7 +84,7 @@ $$
 $$
  =\frac{1}{\pi} \cdot \left[ \frac{\pi}{2} - \left(-\frac{\pi}{2}\right)\right] = \frac{\pi}{\pi} = 1
 $$
-As desired, independently of $a_1, a_2$ and $b$, the area below the probability density function is 1. So the distributions are indeed normalized.
+As desired, independently of $a_1, a_2$ and $b$, the area below the probability density function is 1. So the distributions are indeed normalized. \\
 
 \Large
   \item[(b)] Assuming $P(w_1)=P(w_2)$, show that $P(w_1|x)=P(w_2|x)$ if $x=(a_1 + a_2)/2$, i.e., the minimum error decision boundary is a point midway between the peeks of the two distributions, regardless of $b$. \\ \ \\
@@ -134,7 +134,7 @@ However, the interesting part is that if $a_1 \neq a_2$ then $P(w_1|x)=P(w_2|x)$
   \item[(c)] Plot $P(w_1|x)$ for the case $a_1=3$, $a_2=5$ and $b=1$.\\ \ \\
 \normalsize
 We will plot the pdf with \textit{Geogebra}. For reproduction, just type: p(x)=(1/(1+(x-3)\^{}2))/(1/(1+(x-3)\^{}2)+1/(1+(x-5)\^{}2)) in the command line of \textit{Geogebra}. The result:
-\begin{figure}[h]
+\begin{figure}[H]
 \centering
 \includegraphics[scale=0.4]{7c}
 \end{figure}
@@ -163,11 +163,80 @@ $$
 x < 4
 $$
 And, if we want to see when $P(w_1|x) < 0.5$ the operations are the same, and results $ x > 4$. Therefore, when $x \rightarrow -\infty$,
-$P(w_1|x)\rightarrow 0.5$ from above, and when $x \rightarrow +\infty$, $P(w_1|x) \rightarrow 0.5$ from below. As it we explained before, this behavior inverts in $P(w_2|x)$, so no more computation is needed.
-
-
+$P(w_1|x)\rightarrow 0.5$ from above, and when $x \rightarrow +\infty$, $P(w_1|x) \rightarrow 0.5$ from below. As it we explained before, this behavior inverts in $P(w_2|x)$, so no more computation is needed. \\
 \end{enumerate}
-
+\newpage
+\Huge{\textbf{Computer exercise:}} \\ \ \\
+\Large
+\textbf{1.}  You may need the following procedures for several exercises below.
+  \begin{enumerate}
+\Large
+    \item[(a)] Write a procedure to generate random samples according to a normal distribution $\mathcal N(\boldmath\mu,\boldmath\Sigma)$ in $d$ dimensions.\\ \ \\
+\normalsize
+        Based on the information in Wikipedia's Multivariate Normal Distribution page, and in particular in \href{https://en.wikipedia.org/wiki/Multivariate_normal_distribution#Normal_random_vector}{this part}, we see that a $d-$dimensional vector $X$ is normally distributed (it is a \textit{normal random vector}) iff there exist a vector $\mu$, a matrix $A$ of coefficients and a standard normal vector $Z$ (meaning, it follows a standard normal distribution and the components are independent) such that $AZ + \mu = X$, with the covariance matrix being $\Sigma=AA^T$. So, we will take advantage of all this situation:
+        \begin{itemize}
+          \item We can calculate the matrix $A$ by simply decomposing $\Sigma$ (which is the matrix we are given) using the Cholesky decomposition method, which factors a symmetric positive-definite matrix into a product of a lower triangular matrix and its transpose. R has a built in function named \verb|chol|, although this gives the upper triangular part of the decomposition.
+          \item We just have to calculate a random vector $Z$, and we will do so using the function \verb|rnorm| already included in R.
+          \item The reason we are not doing this straight away is because of $\Sigma$: if it is the identity matrix, or a multiple of the identity $\sigma^2I_d$, we could easily get a normally distributed $d-$dimensional vector by using \verb|rnorm(d, mu, sigma)|, but as this is not necessarily the case and there could be positive covariance between the components, we have to think another way of working.
+        \end{itemize}
+        So, the solution code is this one:
+        \begin{verbatim}
+normal = function(mu, sigma) {
+    d = length(mu)
+    L = t(chol(sigma))
+    res = rnorm(d)
+    return(L %*% res + mu)
+}
+        \end{verbatim}
+\Large
+    \item[(b)] Write a procedure to calculate the discriminant function (of the form given in Eq. 47) for a given normal distribution and prior probability $P(\omega_i)$.\\ \ \\
+\normalsize
+        We will suppose we are given the probability of class $i$, and the $\mu_i,\Sigma_i$ such that $p(x|\omega_i)\sim\mathcal N(\mu_i,\Sigma_i)$. Given the formula in Eq. 47,
+        \[
+g_i(\boldsymbol x)=-\frac{1}{2}(\boldsymbol x-\boldsymbol\mu_i)^T\boldsymbol\Sigma_i^{-1}(\boldsymbol x-\boldsymbol\mu_i)-\frac{d}{2}\ln{2\pi}-\frac{1}{2}\ln{\det{\boldsymbol\Sigma_i}}+\ln{P(\omega_i)},
+        \]
+        the implementation is quite straight forward:
+        \begin{verbatim}
+calc_discr = function(x, p, mu, sigma) {
+  xnorm = x - mu
+  inv = solve(sigma)
+  d = length(mu)
+  dt = det(sigma)
+  return(-0.5*t(xnorm)%*%inv%*%xnorm-d/2*log(2*pi)-0.5*log(dt)+log(p))
+}
+        \end{verbatim}
+        We are using the function \verb|solve|, which R has built-in, that solves linear systems given $A,b$ such that $Ax=b$. If $b$ is absent, the function returns the inverse of a matrix.
+\Large
+    \item[(c)] Write a procedure to calculate the Euclidean distance between two arbitrary points.\\ \ \\
+\normalsize
+        We will write the solution for the general $p-$norm distance:
+        \begin{verbatim}
+# pre: length(x)=length(y)
+euc = function(x, y, p = 2) {
+  n = length(x)
+  sum = 0
+  for (i in 1:n) {
+    sum = sum + abs(x[i]-y[i])^p
+  }
+  return(sum^(1/p))
+}
+        \end{verbatim}
+        Note that we could have also used the \verb|dist| function included in R, by row-binding the coordinates of $x$ and $y$ into a matrix.\\
+        
+\Large
+    \item[(d)] Write a procedure to calculate the Mahalanobis distance between the mean $\mu$ and an arbitrary point $x$, given the covariance matrix.\\ \ \\
+\normalsize
+        We will be using the matrix formula for the Mahalanobis distance, which is the square root of a quadratic form, namely
+        \[
+        \delta_M(x,y)=\sqrt{(x-y)^T\Sigma^{-1}(x-y)}.
+        \]
+        \begin{verbatim}
+mah = function(x, mu, sigma) {
+    xnorm = x - mu
+    return(sqrt(t(xnorm)%*%solve(sigma)%*%xnorm))
+}
+        \end{verbatim}
+  \end{enumerate}
 
 
 \end{document} 
