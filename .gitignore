@@ -1,0 +1,5 @@
+*.synctex
+*.out
+*.log
+*.aux
+*.bbl

@@ -121,40 +121,40 @@ Which is equivalent to see if:
 $$
 (a_2-a_1)^2=(a_1-a_2)^2
 $$
-That is indeed true because inside the parenthesis appear the negative of the other one, as they are squared, the equality is true. Therefore, as all the expressions above are equivalent, it has been shown that if $x=(a_1+a_2)/2$ then $P(w_1|x)=P(w_2|x)$, which was what we want. \\ \ \\
-\color{blue}Observation: \color{black} If we wanted to show if the reciprocal is true, we must go before substituting $x$ and see when the equality occurs. So let's take $(x-a_1)^2=(x-a_2)^2$, which is true if, and only if,
+That is indeed true as $(a_2-a_1)=-(a_1-a_2)$ and $(-1)^2=1$. Therefore, as all the expressions above are equivalent, it has been shown that if $x=(a_1+a_2)/2$ then $P(w_1|x)=P(w_2|x)$. \\ \ \\
+\color{blue}Observation: \color{black} If we wanted to show if the reciprocal is true, we should go back to substituting $x$ and see when does equality hold. So, let's take $(x-a_1)^2=(x-a_2)^2$, which is true if, and only if,
 $$
 x-a_1=a_2-x \qquad \text{or} \qquad x-a_1 = x-a_2
 $$
-The first one gives the solution that we have already seen. But the second one is only true if $a_1=a_2$, in these case, independently of $x$, $p(x|w_1)=p(x|w_2)$. Which is quiet obvious, because if $a_1=a_2$ the distribution are exactly the same. \\
+The first part gives the solution that we have already seen. But the second one is only true if $a_1=a_2$: in these case, independently of $x$, $p(x|w_1)=p(x|w_2)$. This is quite obvious, because if $a_1=a_2$ the distributions are exactly the same. \\
 
 However, the interesting part is that if $a_1 \neq a_2$ then $P(w_1|x)=P(w_2|x)$ if, and only if, $x=(a_1+a_2)/2$.
 
 \Large
   \item[(c)] Plot $P(w_1|x)$ for the case $a_1=3$, $a_2=5$ and $b=1$.\\ \ \\
 \normalsize
-As it is only a plot, we consider that it is easier to show it with \textit{Geogebra}. For replication, just type: p(x)=(1/(1+(x-3)\^{}2))/(1/(1+(x-3)\^{}2)+1/(1+(x-5)\^{}2)) in the command line of \textit{Geogebra}. The result:
+We will plot the pdf with \textit{Geogebra}. For reproduction, just type: p(x)=(1/(1+(x-3)\^{}2))/(1/(1+(x-3)\^{}2)+1/(1+(x-5)\^{}2)) in the command line of \textit{Geogebra}. The result:
 \begin{figure}[h]
 \centering
 \includegraphics[scale=0.4]{7c}
 \end{figure}
-The function increases until 3, where has a maximum, decreases until 5, where have a minimum, and increases again. It also has two asymptotes as we will see in the section (d). \\ 
+The function increases until 3, where it has a maximum, decreases until 5, where it has a minimum, and then increases again. It also has two asymptotes as we will see in section (d). \\
 \Large
   \item[(d)] How do $P(w_1|x)$ and $P(w_2|x)$ behave as $x \rightarrow -\infty$? $x \rightarrow +\infty$? Explain.\\ \ \\
 \normalsize
-As we can see in the plot, in $P(w_1|x)$, when $x \rightarrow -\infty$, the function tends to 0.5 from above, so 0.5 is an asymptote. Similarly when $x \rightarrow +\infty$ the distribution tends to 0.5, but now from below. Again, 0.5 is an asymptote. \\ 
+As we can see in the plot, in $P(w_1|x)$, when $x \rightarrow -\infty$, the function tends to 0.5 from above, so 0.5 is an asymptote. Similarly when $x \rightarrow +\infty$ the distribution tends to 0.5, but now from below. Again, 0.5 is an asymptote. \\
 
 As $P(w_2|x)=1-P(w_1|x)$, the behavior of $P(w_2|x)$ is the opposite of $P(w_1|x)$. When $x \rightarrow -\infty$, $P(w_2|x)\rightarrow 0.5$ from below and when $x \rightarrow +\infty$, $P(w_2|x)\rightarrow 0.5$ from above. So similarly, the function has two asymptotes at 0.5. \\
 
 We can show it analytically. First, notice that $P(w_1|x)$ (as a function of $x$) can be simplified and written as:
 $$
-P(w_1|x) = \frac{x^2 - 10x + 26}{2x^2-16x+36}
-$$ 
-From where the asymptotes when $x \rightarrow \pm\infty$ can be easily seen that are a half. Because it is a fraction of polynomials, and the asymptote is the fraction of the coefficients of the components with 2 in the exponent. Now, to see if it is from below or above or none of them we have to check the following inequality:
+P(w_1|x) = \frac{x^2 - 10x + 26}{2x^2-16x+36}.
+$$
+From this equation we can easily see that when $x \rightarrow \pm\infty$ the asymptotes tend to one half, as it is a fraction of polynomials, and the limit evaluates to the division of leading coefficients. Now, to see if it is from below or above or none of them we have to check the following inequality:
 $$
 P(w_1|x) =\frac{x^2 - 10x + 26}{2x^2-16x+36}>0.5
 $$
-As the denominator is positive always, the inquality is equivalent to:
+As the denominator is positive always, the inequality is equivalent to:
 $$
 x^2 - 10x + 26 > x^2-8x+18
 $$
@@ -162,8 +162,8 @@ So, simplifying, the inequality occurs when:
 $$
 x < 4
 $$
-And, if we want to see when $P(w_1|x) < 0.5$ the operations are the same, and results $ x > 4$. Therefore, when $x \rightarrow -\infty$, 
-$P(w_1|x)\rightarrow 0.5$ from above, and when $x \rightarrow +\infty$, $P(w_1|x) \rightarrow 0.5$ from bellow. As it has been explain before, this behavior inverts in $P(w_2|x)$ so no more computation is needed.
+And, if we want to see when $P(w_1|x) < 0.5$ the operations are the same, and results $ x > 4$. Therefore, when $x \rightarrow -\infty$,
+$P(w_1|x)\rightarrow 0.5$ from above, and when $x \rightarrow +\infty$, $P(w_1|x) \rightarrow 0.5$ from below. As it we explained before, this behavior inverts in $P(w_2|x)$, so no more computation is needed.
 
 
 \end{enumerate}
