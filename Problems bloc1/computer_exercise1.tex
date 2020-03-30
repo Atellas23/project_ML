@@ -64,14 +64,15 @@
 
 \section{Problems}
 \begin{enumerate}
-  \item
+  \item You may need the following procedures for several exercises below.
   \begin{enumerate}
     \item[(a)] Write a procedure to generate random samples according to a normal distribution $\mathcal N(\boldmath\mu,\boldmath\Sigma)$ in $d$ dimensions.\\
         {\scshape Solution:}\\
-        Based on the information in Wikipedia's Multivariate Normal Distribution page, and in particular in \href{https://en.wikipedia.org/wiki/Multivariate_normal_distribution#Normal_random_vector}{this part}, we see that a $d-$dimensional vector $X$ is normally distributed (it is a \textit{normal random vector}) iff there exist a vector $\mu$, a matrix $A$ of coefficients and a standard normal vector $Z$ (meaning, it follows a standard normal distribution) such that $AZ + \mu = X$, with the covariance matrix $\Sigma=AA^T$. So, we will take advantage of all this situation:
+        Based on the information in Wikipedia's Multivariate Normal Distribution page, and in particular in \href{https://en.wikipedia.org/wiki/Multivariate_normal_distribution#Normal_random_vector}{this part}, we see that a $d-$dimensional vector $X$ is normally distributed (it is a \textit{normal random vector}) iff there exist a vector $\mu$, a matrix $A$ of coefficients and a standard normal vector $Z$ (meaning, it follows a standard normal distribution and the components are independent) such that $AZ + \mu = X$, with the covariance matrix being $\Sigma=AA^T$. So, we will take advantage of all this situation:
         \begin{itemize}
           \item We can calculate the matrix $A$ by simply decomposing $\Sigma$ (which is the matrix we are given) using the Cholesky decomposition method, which factors a symmetric positive-definite matrix into a product of a lower triangular matrix and its transpose. R has a built in function named \verb|chol|, although this gives the upper triangular part of the decomposition.
           \item We just have to calculate a random vector $Z$, and we will do so using the function \verb|rnorm| already included in R.
+          \item The reason we are not doing this straight away is because of $\Sigma$: if it is the identity matrix, or a multiple of the identity $\sigma^2I_d$, we could easily get a normally distributed $d-$dimensional vector by using \verb|rnorm(d, mu, sigma)|, but as this is not necessarily the case and there could be positive covariance between the components, we have to think another way of working.
         \end{itemize}
         So, the solution code is this one:
         \begin{verbatim}
@@ -84,7 +85,11 @@ normal = function(mu, sigma) {
         \end{verbatim}
     \item[(b)] Write a procedure to calculate the discriminant function (of the form given in Eq. 47) for a given normal distribution and prior probability $P(\omega_i)$.\\
         {\scshape Solution:}\\
-        We will suppose we are given the probability of class $i$, and the $\mu_i,\Sigma_i$ such that $p(x|\omega_i)\sim\mathcal N(\mu_i,\Sigma_i)$. Then, the implementation is quite straight forward given the formula in Eq. 47:
+        We will suppose we are given the probability of class $i$, and the $\mu_i,\Sigma_i$ such that $p(x|\omega_i)\sim\mathcal N(\mu_i,\Sigma_i)$. Given the formula in Eq. 47,
+        \[
+g_i(\boldsymbol x)=-\frac{1}{2}(\boldsymbol x-\boldsymbol\mu_i)^T\boldsymbol\Sigma_i^{-1}(\boldsymbol x-\boldsymbol\mu_i)-\frac{d}{2}\ln{2\pi}-\frac{1}{2}\ln{\det{\boldsymbol\Sigma_i}}+\ln{P(\omega_i)},
+        \]
+        the implementation is quite straight forward:
         \begin{verbatim}
 calc_discr = function(x, p, mu, sigma) {
   xnorm = x - mu
@@ -96,26 +101,20 @@ calc_discr = function(x, p, mu, sigma) {
         \end{verbatim}
         We are using the function \verb|solve|, which R has built-in, that solves linear systems given $A,b$ such that $Ax=b$. If $b$ is absent, the function returns the inverse of a matrix.
     \item[(c)] Write a procedure to calculate the Euclidean distance between two arbitrary points.\\
-        {\scshape Solution:}
+        {\scshape Solution:}\\
+        We will write the solution for the general $p-$norm distance:
         \begin{verbatim}
-# pre: dimensions of x and y are the same
-euc = function(x,y) {
+# pre: length(x)=length(y)
+euc = function(x, y, p = 2) {
   n = length(x)
   sum = 0
   for (i in 1:n) {
-    sum = sum + (x[i]-y[i])^2
+    sum = sum + abs(x[i]-y[i])^p
   }
-  return(sqrt(sum))
+  return(sum^(1/p))
 }
         \end{verbatim}
-        Note that we could have also used the \verb|dist| function included in R, by row-binding the coordinates of $x$ and $y$ into a matrix, like this:
-        \begin{verbatim}
-# pre: dimensions of x and y are the same
-euc2 = function(x,y) {
-  dd = rbind(x,y)
-  return(dist(dd))
-}
-        \end{verbatim}
+        Note that we could have also used the \verb|dist| function included in R, by row-binding the coordinates of $x$ and $y$ into a matrix.
     \item[(d)] Write a procedure to calculate the Mahalanobis distance between the mean $\mu$ and an arbitrary point $x$, given the covariance matrix.\\
         {\scshape Solution:}\\
         We will be using the matrix formula for the Mahalanobis distance, which is the square root of a quadratic form, namely
