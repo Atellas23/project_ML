@@ -1,0 +1,112 @@
+\documentclass[10pt]{article}
+
+\usepackage{amsmath}                                                                % Math mode $-$ o $$-$$
+\usepackage{amssymb}                                                                % Mathematic symbols
+\usepackage{mathrsfs}                                                               % Caligraphic letters
+\usepackage{amsthm}                                                                 % Theorem-like environments
+
+\usepackage[english]{babel}                                                         % Language (it is important when hyphenating words)
+\usepackage[utf8]{inputenc}                                                         % Accented letters and other strange symbols
+
+\usepackage{graphicx}                                                               % Images
+\usepackage{float}                                                                  % Puts images where they belong
+\usepackage{subcaption}                                                             % Subimages
+\usepackage{wrapfig}                                                                % Text and image on the same line
+\usepackage{subfiles}                                                               % Subfiles
+\usepackage[hidelinks]{hyperref}                                                    % Allows external and internal references
+\usepackage[nameinlink]{cleveref}                                                   % Improves internal references
+\usepackage[super,square]{natbib}                                                   % Easy bibliography
+
+\usepackage{verbatim}                                                               % Verbatim + multiline comments
+\usepackage{anysize}\marginsize{2cm}{2cm}{.5cm}{2cm}                                % Personalizes margins: {L}{R}{U}{D}
+\usepackage{bbm}                                                                    % Allows \1
+\usepackage{mathdots}                                                               % Rising triple dot symbol
+\usepackage{faktor}                                                                 % Fancy rendering of coset sets
+\usepackage{tikz-cd}                                                                % Commutative diagrams
+\usetikzlibrary{babel}                                                              % Avoids interference between tikz-cd i babel
+\usepackage{lipsum}                                                                 % Lorem ipsum dolor sit amet, with \lipsum or \lipsum[1]
+\usepackage{todonotes}                                                              % To indicate something is missing
+\usepackage[normalem]{ulem}
+
+\usepackage{bm}
+
+\usepackage{amsthm}
+\usepackage{xcolor}
+\usepackage{tcolorbox}
+\newtcbox{\mybox}{on line,
+  colframe=blue,colback=blue!10!white,
+  boxrule=0.5pt,arc=4pt,boxsep=0pt,left=6pt,right=6pt,top=6pt,bottom=6pt}
+
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks = true,
+    filecolor = blue,
+    linkcolor = blue,
+    urlcolor = blue,
+}
+
+% Imatges
+\usepackage{graphicx}
+
+\thispagestyle{empty}
+
+
+\begin{document}
+\begingroup
+  \centering
+  \Huge Bayesian decision theory exercises
+  \vskip 1cm
+\endgroup
+\section{Team members:}
+\begin{itemize}
+  \item Luis Sierra Muntané
+  \item Àlex Batlle Casellas
+  \item Aleix Torres i Camps
+\end{itemize}
+\ \\
+\Huge{\textbf{Theoretical exercise:}} \\ \ \\
+\Large{\textbf{Exponential family}}:
+\Large
+The definition of what is the exponential family of distributions can be found in many places. For example, in the book from Christopher M.Bishop: \textit{Patter Recognition and Machine Learning} (a.k.a. Bishop's) says that the exponential family of distributions is the set of all distribution that its density function can be written as:
+$$
+p(x|\bm\mu)=
+h(x)g(\bm\mu)e^{\bm\mu^T \bm{u}(x)}
+$$
+Where $\bm\mu$ is a vector of parameters called \textit{natural parameters} of the distribution. $x$ is the variable that can be scalar or vector, and discrete or continuous. And $h(x)$, $g(\bm\mu)$ and $\bm{u}(x)$ are known functions. \\ \ \\
+In the way that we have defined the exponential family, we don't have to check if it accomplish the properties that all the distributions must have, for example that the integral (or summation) of all its possible values gives exactly one. \\ \ \\ 
+Alternatively, other sites like \textit{Wikipedia} give others forms to express the density function. For example:
+$$
+p(x|\bm\mu)= e^{\bm M(\bm\mu)\cdot \bm u(x)-A(\bm\mu)+B(x)}
+$$
+Notice that, although being equivalent, the Bishop's one appear explicitly the natural parameters, but in the Wikipedia's one it doesn't. This may cause that the second one gives a bit more freedom in choosing the functions and the natural parameters than the first one. In consequence, may be easier to prove that a random variable form part of the exponential family if it can be written in this alternative form. \\ \ \\
+The exponential family include very well known distributions, among others: the \textit{normal}, the \textit{exponential}, the \textit{gamma}, the \textit{binomial} (with fixed number of trials), ... and the \textit{Poisson} as we will show next. \\
+\newpage
+\ \\
+\Large{\textbf{Poisson distribution}}: 
+\Large
+Remember that the Poisson distribution is discrete and starts at $x=0$, it is frequently used for modeling the number of times that something occurs in a defined interval. It only has one parameter $\lambda$ and its probability mass function is:
+$$
+p(x|\lambda)= \frac{\lambda^x e^{-\lambda}}{x!}
+$$
+And so we can write it as:
+$$
+p(x|\lambda)= e^{x\log \lambda - \lambda + \log \frac{1}{x!}}
+$$
+Now, associating each term with Wikipedia's expression of the exponential distribution, we have:
+\begin{equation*}
+\begin{split}
+   M(\mu) &=\log \lambda \\
+   u(x)   &=x  \\
+   A(\mu) &=\lambda \\
+   B(x)   &= -\log x!
+\end{split}
+\end{equation*}
+Now, we just have to choose the natural parameter $\mu$. And here appear our freedom because there are many ways to do it. But we think that the easiest one is choosing $\mu=\lambda$. Then the functions $A$ and $M$ are the identity and the natural logarithm, respectively. \\ \ \\
+Therefore, we have shown that the Poisson distribution forms part of the exponential family.
+
+\newpage
+\Huge{\textbf{Computer exercise:}} \\ \ \\
+
+
+
+\end{document} 
