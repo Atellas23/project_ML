@@ -1,0 +1,102 @@
+---
+title: "Musk"
+author: "Àlex Batlle, Luis Sierra, Aleix Torres"
+date: "4/10/2020"
+output: html_document
+---
+
+```{r}
+data <- read.table("clean2.data", sep=',')
+head(data)
+```
+
+Do not run this chunk, it takes too long simce the model has too many variables.
+
+```{r}
+giant_model <- glm(V169 ~ ., family = binomial, data = data)
+summary(giant_model)
+```
+
+This what a couple of molecules look like, since there are many configurations for the same molecule.
+
+```{r}
+Musk.211 <- data[data$V1 == "MUSK-211",]
+Musk.212 <- data[data$V1 == "MUSK-212",]
+Musk.213 <- data[data$V1 == "MUSK-213",]
+```
+
+GLM using a small number of the variables.
+
+```{r}
+mod.simple <- glm(V169 ~ V3 + V4 + V5 + V6 + V7 + V8 + V9 + V10 + V11 + V12 + V13 + V14 + V15 + V16 + V17 + V18 + V19 + V20, family = binomial, data = data)
+summary(mod.simple)
+step(mod.simple)
+```
+
+Dimensionality reduction using PCA.
+
+```{r}
+out.PCA <- princomp(data[3:169])
+summary(out.PCA)
+```
+
+GLM from results of PCA
+
+```{r}
+library(tidyverse)
+set.seed(1234) #repro
+
+data_ <- as_tibble(data)
+
+pca <- FactoMineR::PCA(data_[-1:-2], graph = FALSE)
+
+score <- as_tibble(factoextra::get_pca_ind(pca)$coord) #extract individual scores
+
+model <- cbind(data_[169], score[1:5]) #use V1 as DV, use Dim.1:Dim.2 as IV
+
+glm <- glm(V169 ~ Dim.1 + Dim.2+ Dim.3 + Dim.4 + Dim.5, family = binomial, data = model)
+summary(glm)
+step(glm)
+```
+
+LDA
+
+```{r}
+library(MASS)
+#plot(data[, c(4, 7)], col = data[,169] + 2) #Ridiculous
+data.lda <- lda(V167 ~ V1 + V2 + V3 + V4 + V5, data = data)
+plot(data.lda)
+```
+
+#### Model Evaluation:
+
+We could implement LOOCV. Below we separate the data into training and testing to evaluate the performance of the models, in an 8:2 training/testing ratio.
+
+```{r}
+library(magrittr)
+library(caret)
+set.seed(123)
+
+# Function to separate into training data and test data
+sample_size <- floor(0.80 * nrow(data))
+train_indices <- sample(seq_len(nrow(data)), size = sample_size)
+train.data  <- data[train_indices, ]
+test.data <- data[-train_indices, ]
+# Now define the models using only the training data and evaluate performance through testing
+
+# GLM model consisting of logistic regression from the first 10 variables
+simple10_glm_model <- glm(V169 ~ V3 + V4 + V5 + V6 + V7 + V8 + V9 + V10 + V11 + V12, family = binomial, data = train.data)
+prob_predictions <- simple10_glm_model %>% predict(test.data, type = "response")
+predicted.classes <- ifelse(prob_predictions > 0.5, 1, 0)
+mean(predicted.classes == test.data$V169) # Accuracy of prediction
+
+# GLM model consisting of a logistic regression from the first 20 variables
+simple20_glm_model <- glm(V169 ~ V3 + V4 + V5 + V6 + V7 + V8 + V9 + V10 + V11 + V12 + V13 + V14 + V15 + V16 + V17 + V18 + V19 + V20 + V21 + V22, family = binomial, data = train.data)
+prob_predictions <- simple20_glm_model %>% predict(test.data, type = "response")
+predicted.classes <- ifelse(prob_predictions > 0.5, 1, 0)
+mean(predicted.classes == test.data$V169) # Accuracy of prediction
+```
+
+
+
+
