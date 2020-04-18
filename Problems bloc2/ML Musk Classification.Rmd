@@ -43,28 +43,23 @@ summary(out.PCA)
 GLM from results of PCA
 
 ```{r}
-library(tidyverse)
-set.seed(1234) #repro
-
-data_ <- as_tibble(data)
-
-pca <- FactoMineR::PCA(data_[-1:-2], graph = FALSE)
-
-score <- as_tibble(factoextra::get_pca_ind(pca)$coord) #extract individual scores
-
-model <- cbind(data_[169], score[1:5]) #use V1 as DV, use Dim.1:Dim.2 as IV
-
-glm <- glm(V169 ~ Dim.1 + Dim.2+ Dim.3 + Dim.4 + Dim.5, family = binomial, data = model)
-summary(glm)
-step(glm)
+library(factoextra)
+pca_data <- princomp(data[-1:-2])
+ind <- get_pca_ind(pca_data)
+coord <- ind$coord
+reduced_data <- cbind(data[169], coord[,1:10])
+glm_pca <- glm(V169 ~ Dim.1 + Dim.2+ Dim.3 + Dim.4 + Dim.5 + Dim.6 + Dim.7 + Dim.8 + Dim.9 + Dim.10, family = binomial, data = reduced_data)
+summary(glm_pca)
+step(glm_pca)
 ```
+
 
 LDA
 
 ```{r}
 library(MASS)
 #plot(data[, c(4, 7)], col = data[,169] + 2) #Ridiculous
-data.lda <- lda(V167 ~ V1 + V2 + V3 + V4 + V5, data = data)
+data.lda <- lda(V167 ~ V3 + V4 + V5 + V6 + V7, data = data)
 plot(data.lda)
 ```
 
@@ -78,10 +73,11 @@ library(caret)
 set.seed(123)
 
 # Function to separate into training data and test data
-sample_size <- floor(0.80 * nrow(data))
+sample_size <- floor(2/3 * nrow(data))
 train_indices <- sample(seq_len(nrow(data)), size = sample_size)
 train.data  <- data[train_indices, ]
 test.data <- data[-train_indices, ]
+
 # Now define the models using only the training data and evaluate performance through testing
 
 # GLM model consisting of logistic regression from the first 10 variables
@@ -95,6 +91,23 @@ simple20_glm_model <- glm(V169 ~ V3 + V4 + V5 + V6 + V7 + V8 + V9 + V10 + V11 + 
 prob_predictions <- simple20_glm_model %>% predict(test.data, type = "response")
 predicted.classes <- ifelse(prob_predictions > 0.5, 1, 0)
 mean(predicted.classes == test.data$V169) # Accuracy of prediction
+```
+
+```{r}
+n <- 20
+# GLM model consisting of a logistic regression from the PCA reduction of the data
+pca_training_data <- princomp(train.data[-1:-2])
+pca_ind <- get_pca_ind(pca_training_data)
+principal_coord <- pca_ind$coord
+reduced_training_data <- cbind(train.data[169], principal_coord[,1:n])
+pca10_glm_model <- glm(V169 ~ Dim.1 + Dim.2 + Dim.3 + Dim.4 + Dim.5 + Dim.6 + Dim.7 + Dim.8 + Dim.9 + Dim.10 + Dim.11 + Dim.12 + Dim.13 + Dim.14 + Dim.15 + Dim.16 + Dim.17 + Dim.18 + Dim.19 + Dim.20, family = binomial, data = reduced_training_data)
+# Changing names of columns of testing data
+pca_test.data <- matrix((as.double(as.matrix(test.data[,-1:-2]))), nrow = 2200, ncol = 167) %*% (loadings(pca_training_data)[])
+colnames(pca_test.data)[1:n] <- c(colnames(reduced_training_data)[-1])
+# Validating results
+prob_predictions_pca <- pca10_glm_model %>% predict(as.data.frame(pca_test.data), type = "response")
+predicted_pca.classes <- ifelse(prob_predictions_pca > 0.5, 1, 0)
+mean(predicted_pca.classes == test.data$V169)
 ```
 
 
