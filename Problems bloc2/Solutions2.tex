@@ -2,7 +2,7 @@
 
 \usepackage{amsmath}                                                                % Math mode $-$ o $$-$$
 \usepackage{amssymb}                                                                % Mathematic symbols
-\usepackage{mathrsfs}                                                               % Caligraphic letters
+\usepackage{mathrsfs}                                                               % Calligraphic letters
 \usepackage{amsthm}                                                                 % Theorem-like environments
 
 \usepackage[english]{babel}                                                         % Language (it is important when hyphenating words)
@@ -67,22 +67,22 @@
 \Huge{\textbf{Theoretical exercise:}} \\ \ \\
 \Large{\textbf{Exponential family}}:
 \Large
-The definition of what is the exponential family of distributions can be found in many places. For example, in the book from Christopher M.Bishop: \textit{Patter Recognition and Machine Learning} (a.k.a. Bishop's) says that the exponential family of distributions is the set of all distribution that its density function can be written as:
+The definition of what is the exponential family of distributions can be found in many places. For example, Christopher M. Bishop's book \textit{Patter Recognition and Machine Learning} (a.k.a. Bishop's) says that the exponential family of distributions is the set of all distributions that have a density function that can be written as
 $$
 p(x|\bm\mu)=
-h(x)g(\bm\mu)e^{\bm\mu^T \bm{u}(x)}
+h(x)g(\bm\mu)e^{\bm\mu^T \bm{u}(x)},
 $$
-Where $\bm\mu$ is a vector of parameters called \textit{natural parameters} of the distribution. $x$ is the variable that can be scalar or vector, and discrete or continuous. And $h(x)$, $g(\bm\mu)$ and $\bm{u}(x)$ are known functions. \\ \ \\
-In the way that we have defined the exponential family, we don't have to check if it accomplish the properties that all the distributions must have, for example that the integral (or summation) of all its possible values gives exactly one. \\ \ \\ 
+where $\bm\mu$ is a vector of parameters called \textit{natural parameters} of the distribution. $x$ is a scalar or vector variable, and can be either discrete or continuous. $h(x)$, $g(\bm\mu)$ and $\bm{u}(x)$ are known functions. \\ \ \\
+In the way that we have defined the exponential family, we don't have to check if it accomplish the properties that all the distributions must have, for example that the integral (or summation) of all its possible values gives exactly one. \\ \ \\
 Alternatively, other sites like \textit{Wikipedia} give others forms to express the density function. For example:
 $$
 p(x|\bm\mu)= e^{\bm M(\bm\mu)\cdot \bm u(x)-A(\bm\mu)+B(x)}
 $$
 Notice that, although being equivalent, the Bishop's one appear explicitly the natural parameters, but in the Wikipedia's one it doesn't. This may cause that the second one gives a bit more freedom in choosing the functions and the natural parameters than the first one. In consequence, may be easier to prove that a random variable form part of the exponential family if it can be written in this alternative form. \\ \ \\
-The exponential family include very well known distributions, among others: the \textit{normal}, the \textit{exponential}, the \textit{gamma}, the \textit{binomial} (with fixed number of trials), ... and the \textit{Poisson} as we will show next. \\
+The exponential family includes very well known distributions, among others: \textit{normal}, \textit{exponential}, \textit{gamma}, \textit{binomial} (with fixed number of trials), ... and \textit{Poisson} as we will show next. \\
 \newpage
 \ \\
-\Large{\textbf{Poisson distribution}}: 
+\Large{\textbf{Poisson distribution}}:
 \Large
 Remember that the Poisson distribution is discrete and starts at $x=0$, it is frequently used for modeling the number of times that something occurs in a defined interval. It only has one parameter $\lambda$ and its probability mass function is:
 $$
@@ -101,12 +101,55 @@ Now, associating each term with Wikipedia's expression of the exponential distri
    B(x)   &= -\log x!
 \end{split}
 \end{equation*}
-Now, we just have to choose the natural parameter $\mu$. And here appear our freedom because there are many ways to do it. But we think that the easiest one is choosing $\mu=\lambda$. Then the functions $A$ and $M$ are the identity and the natural logarithm, respectively. \\ \ \\
-Therefore, we have shown that the Poisson distribution forms part of the exponential family.
+Now, we just have to choose the natural parameter $\mu$. And here we have some freedom of choice because there are many ways to do it. We think that the easiest one is choosing $\mu=\lambda$. Then the functions $A$ and $M$ are the identity and the natural logarithm, respectively. \\ \ \\
+Therefore, we have shown that the Poisson distribution belongs to the exponential family.
 
 \newpage
-\Huge{\textbf{Computer exercise:}} \\ \ \\
+\Huge{\textbf{Computer exercise: Musk problem}} \\ \ \\
+\Large
+Now we want to consider the problem 'Musk' set in the statement: given a set of molecule descriptions via some chemical and structural parameters, classify them into two different classes: positive (being a Musk molecule) and negative (not being a Musk molecule). All code from now on can be found in the \verb|.Rmd| file included in the compressed file. It also contains some additional chunks not listed here, which were used solely to try and see how different models behaved. In order to do this, we first of all read and pre-process the data:
+\begin{verbatim}
+data <- read.table("clean2.data", sep = ',')
+head(data)
+summary(data)
+\end{verbatim}
+We can't see any missing value or strange behaviour of the variables to our understanding of the topic. Then, we will not comment on anything regarding data cleaning or missing value imputation.
+\\ \ \\
+We first of all want to create two different models to gain some insight on the problem. We start our journey inspecting a model using a small number of the variables:
+\begin{verbatim}
+mod.simple <- glm(V169 ~ V3 + V4 + V5 + V6 + V7 + V8 + V9 + V10 +
+                  V11 + V12 + V13 + V14 + V15 + V16 + V17 + V18 +
+                  V19 + V20, family = binomial, data = data)
+summary(mod.simple)
+\end{verbatim}
+This model appears to ditch V9 as its $p$-value is quite greater than 0.05: we will use this significance level all through the exercise. We now want to see how can we reduce the dimensionality of the data in order to make simpler models. So, we try to do a PCA and use its results into a GLM:
+\begin{verbatim}
+out.PCA <- princomp(data[,3:169])
+summary(out.PCA)
+\end{verbatim}
+We can see that using 10-11 variables we get close to the 80\% of data variance, so now we will use these 10 first principal components into another GLM:
+\begin{verbatim}
+pca_data <- princomp(data[,-1:-2])
+ind <- get_pca_ind(pca_data)
+coord <- ind$coord
+reduced_data <- cbind(data[169], coord[,1:10])
+glm_pca <- glm(V169 ~ Dim.1 + Dim.2+ Dim.3 + Dim.4 + Dim.5 + Dim.6 + Dim.7 + Dim.8 + Dim.9 + Dim.10, family = binomial, data = reduced_data)
+summary(glm_pca)
+\end{verbatim}
+The $p$-values of the fifth and seventh component are greater that 0.05, and using the \verb|step()| function, only the fifth is left out in the end.
+\\ \ \\
+Now we pass on to model testing. We are aware of the fact that each molecule is described by 169 features, although variables 1, 2 and 169 are names and the class, respectively. This is too many variables for a feasible realization of the full model, so we will not consider this one. We will first of all segment the data set into a training set and a testing set. This way, we will be able to assess the different models' performance on this testing set (we set a seed in order to make our results reproducible).
+\begin{verbatim}
+set.seed(123)
+sample_size <- floor(2/3 * nrow(data))
+train_indices <- sample(seq_len(nrow(data)), size = sample_size)
+train.data  <- data[train_indices, ]
+test.data <- data[-train_indices, ]
+\end{verbatim}
+Now we will define the models using only the training data and we will evaluate their performance through testing. Note that we will always use logistic regression and binomial models, as this is a binary classification problem.
+\\ \ \\
+\Large{\textbf{Without dimensionality reduction:}}\\
 
+\Large{\textbf{Using dimensionality reduction:}}
 
-
-\end{document} 
+\end{document}
