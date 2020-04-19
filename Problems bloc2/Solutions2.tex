@@ -127,13 +127,16 @@ This model appears to ditch V9 as its $p$-value is quite greater than 0.05: we w
 out.PCA <- princomp(data[,3:169])
 summary(out.PCA)
 \end{verbatim}
+\newpage
 We can see that using 10-11 variables we get close to the 80\% of data variance, so now we will use these 10 first principal components into another GLM:
 \begin{verbatim}
 pca_data <- princomp(data[,-1:-2])
 ind <- get_pca_ind(pca_data)
 coord <- ind$coord
 reduced_data <- cbind(data[169], coord[,1:10])
-glm_pca <- glm(V169 ~ Dim.1 + Dim.2+ Dim.3 + Dim.4 + Dim.5 + Dim.6 + Dim.7 + Dim.8 + Dim.9 + Dim.10, family = binomial, data = reduced_data)
+glm_pca <- glm(V169 ~ Dim.1 + Dim.2+ Dim.3 + Dim.4 + Dim.5 + Dim.6
+                      + Dim.7 + Dim.8 + Dim.9 + Dim.10,
+                      family = binomial, data = reduced_data)
 summary(glm_pca)
 \end{verbatim}
 The $p$-values of the fifth and seventh component are greater that 0.05, and using the \verb|step()| function, only the fifth is left out in the end.
@@ -149,7 +152,63 @@ test.data <- data[-train_indices, ]
 Now we will define the models using only the training data and we will evaluate their performance through testing. Note that we will always use logistic regression and binomial models, as this is a binary classification problem.
 \\ \ \\
 \Large{\textbf{Without dimensionality reduction:}}\\
-
-\Large{\textbf{Using dimensionality reduction:}}
+Now we define two different models that do not use dimensionality reduction nor any feature extraction. We are just using some of the variables. For the first one, we use the 10 first variables (excluding V1 and V2, that is, V3-12):
+\begin{verbatim}
+simple10_glm_model <- glm(V169 ~ V3 + V4 + V5 + V6 + V7 + V8 + V9
+                                 + V10 + V11 + V12, family =
+                                 binomial, data = train.data)
+\end{verbatim}
+Now we just make predictions on the testing data,
+\begin{verbatim}
+prob_predictions <- simple10_glm_model %>% predict(test.data,
+                                            type = "response")
+predicted.classes <- ifelse(prob_predictions > 0.5, 1, 0)
+mean(predicted.classes == test.data$V169) # Accuracy of prediction
+\end{verbatim}
+and the results indicate that we have accurate predictions on 85.77\% of the individuals in the testing data. We want to see if adding variables to this model makes it be any better; for an example, we are adding 10 more variables, so we are using V3-22:
+\begin{verbatim}
+simple20_glm_model <- glm(V169 ~ V3 + V4 + V5 + V6 + V7 + V8 + V9 
+                                 + V10 + V11 + V12 + V13 + V14 + 
+                                 V15 + V16 + V17 + V18 + V19 + V20
+                                 + V21 + V22, family = binomial,
+                                 data = train.data)
+prob_predictions <- simple20_glm_model %>% predict(test.data,
+                                            type = "response")
+predicted.classes <- ifelse(prob_predictions > 0.5, 1, 0)
+mean(predicted.classes == test.data$V169) # Accuracy of prediction
+\end{verbatim}
+This way, we get to 86.00\% of the predictions on the testing data being correct. So, we didn't get much better.
+\\ \ \\
+\Large{\textbf{Using dimensionality reduction:}}\\
+Up until this point we have been fitting models that do not use any dimensionality reduction or feature extraction. We now bring this into the model, performing a PCA on the data:\\
+We first perform this analysis and we can observe some things:
+\begin{verbatim}
+pca_training_data <- princomp(train.data[-1:-2])
+\end{verbatim}
+First of all, doing a \verb|summary()| of this PCA we can see it is very similar to the one with all the data: the different dimensions entail approximately the same cumulative proportion of variance in both cases. So, we now build the new training data set, where the different observations are explained by the first 10 principal components, and we fit a GLM with these PC's as explanatory variables:
+\begin{verbatim}
+principal_coord <- get_pca_ind(pca_training_data)$coord
+reduced_training_data <- cbind(train.data[169],
+                               principal_coord[,1:10])
+pca10_glm_model <- glm(V169 ~ Dim.1 + Dim.2 + Dim.3 + Dim.4 +
+                              Dim.5 + Dim.6 + Dim.7 + Dim.8 +
+                              Dim.9 + Dim.10, family = binomial,
+                              data = reduced_training_data)
+\end{verbatim}
+Now we transform the testing data using the \verb|loadings| attribute of the PCA object in R,
+\begin{verbatim}
+pca_test.data <- matrix((as.double(as.matrix(test.data[,-1:-2]))),
+                                   nrow = 2200, ncol = 167) %*% 
+                                   loadings(pca_training_data)[]
+colnames(pca_test.data)[1:10] <- colnames(reduced_training_data)[-1]
+\end{verbatim}
+and we make predictions on the testing data and we test its accuracy:
+\begin{verbatim}
+prob_predictions_pca <- pca10_glm_model %>% 
+        predict(as.data.frame(pca_test.data), type = "response")
+predicted_pca.classes <- ifelse(prob_predictions_pca > 0.5, 1, 0)
+mean(predicted_pca.classes == test.data$V169)
+\end{verbatim}
+We get an accuracy of 79.27\%, so not much better also. If we take 11 instead of 10 variables, the accuracy grows to 84.27\%, which is a little better. From here on, the accuracy does not seem to grow that much: for example, using 20 PC's it only gets to 87.04\%.
 
 \end{document}

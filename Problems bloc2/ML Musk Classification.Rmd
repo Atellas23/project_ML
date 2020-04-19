@@ -93,19 +93,18 @@ mean(predicted.classes == test.data$V169) # Accuracy of prediction
 n <- 20
 # GLM model consisting of a logistic regression from the PCA reduction of the data
 pca_training_data <- princomp(train.data[-1:-2])
-pca_ind <- get_pca_ind(pca_training_data)
-principal_coord <- pca_ind$coord
+principal_coord <- get_pca_ind(pca_training_data)$coord
 reduced_training_data <- cbind(train.data[169], principal_coord[,1:n])
-pca10_glm_model <- glm(V169 ~ Dim.1 + Dim.2 + Dim.3 + Dim.4 + Dim.5 + Dim.6 + Dim.7 + Dim.8 + Dim.9 + Dim.10 + Dim.11 + Dim.12 + Dim.13 + Dim.14 + Dim.15 + Dim.16 + Dim.17 + Dim.18 + Dim.19 + Dim.20, family = binomial, data = reduced_training_data)
+pca10_glm_model <- glm(V169 ~ Dim.1 + Dim.2 + Dim.3 + Dim.4 + Dim.5 + Dim.6 + Dim.7 + Dim.8 + Dim.9 + Dim.10 + Dim.11 + Dim.12 + Dim.13 + Dim.14 + Dim.15 + Dim.16 + Dim.17 + Dim.18 + Dim.19 + Dim.20 + Dim.21 + Dim.22, family = binomial, data = reduced_training_data)# + Dim.11 + Dim.12 + Dim.13 + Dim.14 + Dim.15 + Dim.16 + Dim.17 + Dim.18 + Dim.19 + Dim.20, family = binomial, data = reduced_training_data)
 # Changing names of columns of testing data
-pca_test.data <- matrix((as.double(as.matrix(test.data[,-1:-2]))), nrow = 2200, ncol = 167) %*% (loadings(pca_training_data)[])
-colnames(pca_test.data)[1:n] <- c(colnames(reduced_training_data)[-1])
+pca_test.data <- matrix((as.double(as.matrix(test.data[,-1:-2]))), nrow = 2200, ncol = 167) %*% loadings(pca_training_data)[]
+colnames(pca_test.data)[1:n] <- colnames(reduced_training_data)[-1]
 # Validating results
-prob_predictions_pca <- pca10_glm_model %>% predict(as.data.frame(pca_test.data), type = "response")
+prob_predictions_pca <- pca10_glm_model %>% 
+          predict(as.data.frame(pca_test.data), type = "response")
 predicted_pca.classes <- ifelse(prob_predictions_pca > 0.5, 1, 0)
 mean(predicted_pca.classes == test.data$V169)
 ```
-
 
 
 
