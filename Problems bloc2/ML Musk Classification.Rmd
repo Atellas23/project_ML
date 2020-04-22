@@ -16,13 +16,13 @@ library(MASS)
 
 For this analysis, we will be considering a dataset titled "Musk" created by the AI Group at Arris Pharmaceutical Corporation, consisting of chemical molecules and variables concerning different physical measurements of several low-energy states of those molecules. The aim is to predict whether the aforementioned variables are musk or non-musk, which is a property about the final smell of the molecules, from the 6,598 instances provided. The class of the molecule is given by the final variable, *V169*, and so that is what we will be trying to predict.
 
-To do so, we will apply a Generalised Linear Model using a logit transformation over a set of variables because we considered this to be the most adequate way to model our data given the characteristics of the problem at hand. When trying to use explore how other GLMs would fit the data the results were very poor, and the features of the dataset all point towards using this kind of model.
+To do so, we will apply a Generalised Linear Model using a logit transformation over a set of variables because we considered this to be the most adequate way to model our data given the characteristics of the problem at hand. When trying to explore how other GLMs would fit the data the results were very poor, and the features of the dataset all point towards using this kind of model.
 
 ```{r}
 data <- read.table("clean2.data", sep=',')
 ```
 
-This what a couple of molecules look like, since there are many configurations for the same molecule. We can see that if one such molecule is marked as a musk, then all configurations are marked as so.
+This is what a couple of molecules look like, since there are many configurations for the same molecule. We can see that if one such molecule is marked as a musk, then all configurations are marked as so.
 
 ```{r}
 Musk.211 <- data[data$V1 == "MUSK-211",]
@@ -40,7 +40,7 @@ Firstly, it is important to observe that given the 168 attributes (excluding the
 variables <- paste("V", 3:168, sep="")
 fmla <- as.formula(paste("V169 ~ ", paste(variables, collapse= "+")))
 giant_model <- glm(fmla, family = binomial, data = data)
-summary(giant_model)
+# summary(giant_model)
 # step(giant_model) -- Do not run
 ```
 
@@ -98,9 +98,9 @@ plot(lda_model)
 
 The previously exposed models were all trained using the entirety of the data, and so they are prone to overfitting problems, given that there may be patterns in the data which are due to random chance rather than there being meaningful relationships between the variables. To sidestep such problems, we will use a method of evaluation of the models using K-fold cross validation.
 
-This method is superior to Leave-One-Out Cross Validation (LOOCV) in that it is computationally less expensive, and given the relatively large amount of datapoints being handled, it preferable to prioritise computational considerations over precision ones. Moreover, James et al. (2014) showed that K-fold CV often leads to more accurate values of the test error than LOOCV.
+This method is superior to Leave-One-Out Cross Validation (LOOCV) in that it is computationally less expensive, and given the relatively large amount of datapoints being handled, it preferable to prioritise computational considerations over precision ones. Moreover, James et al. (2014)[1] showed that K-fold CV often leads to more accurate values of the test error than LOOCV.
 
-Below we separate the data into training and learning to evaluate the performance of the models, in an 2:1 training/testing ratio, and after that perform the K-fold CV over the learning data.
+Below, we separate the data into training and learning to evaluate the performance of the models, in a 2:1 training/testing ratio, and after that perform the K-fold CV over the learning data.
 
 ```{r}
 # Randomly separate into learning data and test data
@@ -139,31 +139,46 @@ We can do the same to the data decomposed using PCA, as shown below.
 
 ```{r}
 # Choice of principal components to be used
-dim <- 35
+dim <- 20
 
 # PCA on data
 pca_learning.data <- princomp(learning.data[-1:-2])
-principal_coord <- get_pca_ind(pca_training_data)$coord
+principal_coord <- get_pca_ind(pca_learning.data)$coord
+
+# Adjoining target variable to matrix of principal components
 reduced_learning_data <- cbind(learning.data[169], principal_coord[,1:dim])
 
 # Using learning data for cross validation
 K <- 5
 
 # Transforming V169 to factor variable to perform cv
-pca_learning.data$V169 <- factor(pca_learning.data$V169)
+reduced_learning_data$V169 <- factor(reduced_learning_data$V169)
 
 pca_glm_model <- train(form = V169 ~ .,
-               data = pca_learning.data[,-1:-2],
+               data = reduced_learning_data,
                trControl = trainControl(method = "cv", number = K),
                method = "glm",
                family = "binomial")
+
+# Changing names of columns of learning data to those of the PCA
+pca_test.data <- matrix((as.double(as.matrix(test.data[,-1:-2]))), nrow = 2200, ncol = 167) %*% loadings(pca_learning.data)[]
+colnames(pca_test.data)[1:n] <- colnames(reduced_learning_data)[-1]
+
+# Real accuracy as calculated over test data
+pca_glm_predicted <- pca_glm_model %>% predict(pca_test.data, type = "raw")
+pca_glm_table <- table(test.data$V169, pca_glm_predicted)
+pca_glm_accuracy <- (pca_glm_table[1,1] + pca_glm_table[2,2])/sum(pca_glm_table)
+pca_glm_table
+pca_glm_accuracy
 ```
 
+It is interesting to see that it is the case that the final GLM model is better than the final model after the dimensionality reduction, which makes sense given that there is a loss of information when considering only a subset of all principal components.
 
+#### References
 
+[1] James, Gareth, Daniela Witten, Trevor Hastie, and Robert Tibshirani. 2014. An Introduction to Statistical Learning: With Applications in R. Springer Publishing Company, Incorporated.
 
-
-
+#### Appendix
 
 ```{r}
 # Now define the models using only the training data and evaluate performance through testing
