@@ -84,7 +84,7 @@ pca_fmla <- as.formula(paste("V169 ~ ", paste(dimensions, collapse= "+")))
 glm_pca <- glm(pca_fmla, family = binomial, data = reduced_data)
 
 # Eliminating redundancy using Akaike Information Criterion (AIC)
-pca_out <- step(glm_pca)
+pca_out <- capture.output(step(glm_pca))
 ```
 
 We can also create models reducing the dimensionality of the data by performing a Linear Discriminant Analysis (LDA) to project the data onto a lower-dimensional space, as shown in the following chunk.
@@ -100,7 +100,7 @@ The previously exposed models were all trained using the entirety of the data, a
 
 This method is superior to Leave-One-Out Cross Validation (LOOCV) in that it is computationally less expensive, and given the relatively large amount of datapoints being handled, it preferable to prioritise computational considerations over precision ones. Moreover, James et al. (2014)[1] showed that K-fold CV often leads to more accurate values of the test error than LOOCV.
 
-Below, we separate the data into training and learning to evaluate the performance of the models, in a 2:1 training/testing ratio, and after that perform the K-fold CV over the learning data.
+Below, we separate the data into training and learning to evaluate the performance of the models, in a 2:1 training/testing ratio, and after that perform the K-fold CV over the learning data. After experimenting with the method for a while, it seemed clear that using a value of $K=5$ was large enough, since larger values did not produce better models. 
 
 ```{r}
 # Randomly separate into learning data and test data
@@ -111,7 +111,7 @@ learning.data  <- data[learning_indices, ]
 test.data <- data[-learning_indices, ]
 
 # Using learning data for cross validation
-K <- 5
+K <- 10
 
 # Transforming V169 to factor variable to perform cv
 glm_learning.data <- learning.data
@@ -149,7 +149,7 @@ principal_coord <- get_pca_ind(pca_learning.data)$coord
 reduced_learning_data <- cbind(learning.data[169], principal_coord[,1:dim])
 
 # Using learning data for cross validation
-K <- 5
+K <- 10
 
 # Transforming V169 to factor variable to perform cv
 reduced_learning_data$V169 <- factor(reduced_learning_data$V169)
