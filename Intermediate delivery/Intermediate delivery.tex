@@ -102,7 +102,7 @@ The second thing we detected is that the variable residual.sugar has a lot of sm
 \includegraphics[scale=0.4]{histogram_of_log_residualsugar}
 \end{figure}
 \ \\
-Finally, the other ones have a similar shape independent of the wine type, but normally with different means. Something that we be useful when we will perform classification. And will be relevant for the regression model to differentiate them as factors. Here some of the others histograms: \\
+Finally, the other ones have a \textbf{similar shape} independent of the wine type, but usually with \textbf{different means}. This fact can be useful when we will perform classification. And it will be relevant for the regression model to differentiate the wine type as factors. Here some of the others histograms: \\
 \begin{figure}[H]
 \centering
 \caption{Histograms of 4 variables}
@@ -112,14 +112,14 @@ Finally, the other ones have a similar shape independent of the wine type, but n
 \includegraphics[scale=0.4]{histogram_of_totalsulfurdioxide}
 \end{figure}
 \ \\
-The next thing we did is to perform a PCA, because it can help us to visualize the data and start seeing which variables are more relevant or less. We made the following biplot, where the first two components explain 50\% of the variability. \\
+The next thing we did is to perform a \textbf{PCA}, because it can help us to visualize the data and start seeing which variables are more relevant or less. We made the following biplot, where the first two components explain 50\% of the variability. \\
 \begin{figure}[H]
 \centering
 \caption{PCA biplot}
 \includegraphics[scale=0.75]{PCA_biplot}
 \end{figure}
 \ \\
-As the two groups seems to be separate into the horizontal edge, it seems that the density and alcohol variables not explain the diferents between the groups. And variables such as total.sulfur.dioxide or volatile.acidity do. In the PCA we can also see that some variables are very correlated, for example, total.sulfur.dioxide and free.sulfur.dioxide or residual.sugar and citric.acid. There is a last thing we observed, the outliers. There are points that are not only far from the others in one variable, so they are in a multiple of them. We will consider to remove them or not.   \\ \ \\
+As the two groups seems to be separate into the horizontal edge, it seems that the \textbf{density and alcohol variables not explain the different between the groups}. And variables such as \textbf{total.sulfur.dioxide or volatile.acidity do}. In the PCA we can also see that \textbf{some variables are correlated}, for example, total.sulfur.dioxide and free.sulfur.dioxide or residual.sugar and citric.acid. There is a last thing we observed, the \textbf{outliers}. There are points that are not only far from the others in one variable, so they are in a multiple of them. We will consider to remove them or not.   \\ \ \\
 
 \section{Modelling methods considered.}
 
