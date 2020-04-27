@@ -1,0 +1,148 @@
+---
+title: "wine pre-processing"
+author: "Àlex, Luis, Aleix"
+date: "26/4/2020"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(MASS)
+library(dplyr)
+```
+
+# pre-processing
+
+```{r}
+red_w <- read.table("winequality-red.csv", sep=';', header = TRUE)
+white_w <- read.table("winequality-white.csv", sep=';', header = TRUE)
+```
+
+```{r}
+red_w <- distinct(red_w)
+white_w <- distinct(white_w)
+
+wine <- rbind(red_w, white_w)
+
+
+wine[duplicated(wine),]
+revwine <- wine[dim(wine)[1]:1,]
+revwine[duplicated(revwine),]
+
+red_w <- red_w[c(-723,-964),]
+white_w <- white_w[c(-2175, -2765),]
+wine <- wine[c(-723,-964),]
+
+wine.type <- c(rep("r", dim(red_w)[1]), rep("w", dim(white_w)[1]))
+wine.quality <- wine$quality
+
+red_w <- red_w[-12]
+white_w <- white_w[-12]
+wine <- wine[-12]
+```
+
+```{r}
+dim(wine)
+dim(red_w)
+dim(white_w)
+table(wine.quality)
+```
+
+```{r}
+summary(wine)
+```
+```{r}
+hist(wine$citric.acid, breaks = 200)
+hist(red_w$citric.acid, breaks = 200)
+hist(white_w$citric.acid, breaks = 200)
+```
+
+
+# Plots
+
+```{r}
+apply(wine, 2, hist, breaks = 200)
+apply(wine, 2, plot, col=c(rep(2, 1599), rep(4, 4898)))
+
+for (col in colnames(wine)) {
+  hist(white_w[,col], col=rgb(0,0,1,1/4), breaks = 150)
+  hist(red_w[,col], col=rgb(1,0,0,1/4), add=T, breaks = 150)
+}
+
+for (col in colnames(wine)) {
+  hist(log(white_w[,col]), col=rgb(0,0,1,1/4), breaks = 150)
+  hist(log(red_w[,col]), col=rgb(1,0,0,1/4), add=T, breaks = 150)
+}
+```
+```{r}
+hist(white_w[,"fixed.acidity"], col=rgb(0,0,1,1/4), breaks = 150, main="Histogram of fixed.acidity", xlab="fixed.acidity")
+hist(red_w[,"fixed.acidity"], col=rgb(1,0,0,1/4), add=T, breaks = 150)
+legend('topright', c("red wine","white wine"), lty=1, col=c('red', 'blue'))
+
+hist(white_w[,"volatile.acidity"], col=rgb(0,0,1,1/4), breaks = 150, main="Histogram of volatile.acidity", xlab="volatile.acidity")
+hist(red_w[,"volatile.acidity"], col=rgb(1,0,0,1/4), add=T, breaks = 150)
+legend('topright', c("red wine","white wine"), lty=1, col=c('red', 'blue'))
+
+hist(white_w[,"citric.acid"], col=rgb(0,0,1,1/4), breaks = 150, main="Histogram of citric.acid", xlab="citric.acid")
+hist(red_w[,"citric.acid"], col=rgb(1,0,0,1/4), add=T, breaks = 150)
+legend('topright', c("red wine","white wine"), lty=1, col=c('red', 'blue'))
+```
+```{r}
+hist(white_w[,"residual.sugar"], col=rgb(0,0,1,1/4), breaks = 150, main="Histogram of residual.sugar", xlab="residual.sugar")
+hist(red_w[,"residual.sugar"], col=rgb(1,0,0,1/4), add=T, breaks = 150)
+legend('topright', c("red wine","white wine"), lty=1, col=c('red', 'blue'))
+
+hist(log(white_w[,"residual.sugar"]), col=rgb(0,0,1,1/4), breaks = 70, main="Histogram of the logarithm of residual.sugar", xlab="log(residual.sugar)")
+hist(log(red_w[,"residual.sugar"]), col=rgb(1,0,0,1/4), add=T, breaks = 70)
+legend('topright', c("red wine","white wine"), lty=1, col=c('red', 'blue'))
+```
+
+```{r}
+hist(white_w[,"chlorides"], col=rgb(0,0,1,1/4), breaks = 100, main="Histogram of chlorides", xlab="chlorides")
+hist(red_w[,"chlorides"], col=rgb(1,0,0,1/4), add=T, breaks = 100)
+legend('topright', c("red wine","white wine"), lty=1, col=c('red', 'blue'))
+
+hist(white_w[,"total.sulfur.dioxide"], col=rgb(0,0,1,1/4), breaks = 100, main="Histogram of total.sulfur.dioxide", xlab="total.sulfur.dioxide")
+hist(red_w[,"total.sulfur.dioxide"], col=rgb(1,0,0,1/4), add=T, breaks = 100)
+legend('topright', c("red wine","white wine"), lty=1, col=c('red', 'blue'))
+
+hist(white_w[,"pH"], col=rgb(0,0,1,1/4), breaks = 100, main="Histogram of pH", xlab="pH")
+hist(red_w[,"pH"], col=rgb(1,0,0,1/4), add=T, breaks = 100)
+legend('topright', c("red wine","white wine"), lty=1, col=c('red', 'blue'))
+
+hist(white_w[,"sulphates"], col=rgb(0,0,1,1/4), breaks = 100, main="Histogram of sulphates", xlab="sulphates")
+hist(red_w[,"sulphates"], col=rgb(1,0,0,1/4), add=T, breaks = 100)
+legend('topright', c("red wine","white wine"), lty=1, col=c('red', 'blue'))
+```
+
+
+
+
+
+```{r}
+wineS <- scale(wine, center=TRUE, scale=TRUE)
+pca.out <- princomp(wineS)
+
+pca.points <- pca.out$scores%*%solve(diag(pca.out$sdev))
+pca.arrows <- pca.out$loadings%*%diag(pca.out$sdev)*7
+par(pty="s")
+plot(pca.points[,1], pca.points[,2], col=c(rep(2, 1357), rep(4, 3959)), 
+     xlab = "First principal component", ylab = "Second principal component", 
+     main = "PCA biplot of wine data", xlim=c(-10, 9), ylim=c(-10, 9), asp=1)
+arrows(0, 0, pca.arrows[, 1], pca.arrows[, 2], col = 1)
+text(pca.arrows[, 1]*1.3, pca.arrows[, 2]*1.4, labels=colnames(wine), cex = 0.6, col=1)
+legend('bottomleft', c("red wine","white wine"), pch=1, col=c('red', 'blue'))
+```
+
+
+
+```{r}
+var <- summary(pca.out)$sdev^2
+taula <- rbind("lambda"=var, "percentatge"=var/sum(var), "acumulat"=cumsum(var/sum(var)))
+screeplot(pca.out)
+taula
+```
+
+

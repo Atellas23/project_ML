@@ -1,0 +1,61 @@
+---
+title: "wine project"
+author: "Àlex, Luis, Aleix"
+date: "25/4/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(MASS)
+```
+
+
+
+```{r}
+red_w <- read.table("winequality-red.csv", sep=';', header = TRUE)
+white_w <- read.table("winequality-white.csv", sep=';', header = TRUE)
+```
+
+
+```{r}
+head(red_w)
+dim(red_w)
+head(white_w)
+dim(white_w)
+```
+```{r}
+apply(red_w, 2, hist)
+```
+```{r}
+wine <- rbind(red_w, white_w)
+wine.type <- c(rep("r", 1599), rep("w", 4898))
+```
+
+
+```{r}
+lda.model <- lda(x=wine, grouping=wine.type)
+loadings.lda <- as.matrix(wine) %*% as.matrix(lda.model$scaling)
+plot(loadings, col=c(rep(1, 1599), rep(2, 4898)))
+```
+
+```{r}
+lda.model.loocv <- lda(x=wine, grouping=wine.type, CV=TRUE)
+(ct <- table(Truth=wine.type, Pred=lda.model.loocv$class))
+```
+
+```{r}
+qda.model.loocv <- qda(x=wine, grouping=wine.type, CV=TRUE)
+(ct <- table(Truth=wine.type, Pred=qda.model.loocv$class))
+```
+
+
+```{r}
+wine.scale <- scale(wine, center = TRUE, scale = TRUE)
+lda.scale.model.loocv <- lda(x=wine.scale, grouping=wine.type, CV=TRUE)
+(ct <- table(Truth=wine.type, Pred=lda.scale.model.loocv$class))
+```
+
+
+
+
