@@ -36,7 +36,7 @@ wine.type <- c(rep("r", 1599), rep("w", 4898))
 ```{r}
 lda.model <- lda(x=wine, grouping=wine.type)
 loadings.lda <- as.matrix(wine) %*% as.matrix(lda.model$scaling)
-plot(loadings, col=c(rep(1, 1599), rep(2, 4898)))
+plot(loadings.lda, col=c(rep(1, 1599), rep(2, 4898)))
 ```
 
 ```{r}
