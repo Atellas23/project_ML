@@ -58,12 +58,18 @@
 
 
 \section{Description and goals of the project.}
-Based on \href{http://archive.ics.uci.edu/ml/datasets/Wine+Quality}{this dataset} ...
+Based on \href{http://archive.ics.uci.edu/ml/datasets/Wine+Quality}{this data set} ...
 
 \section{Related previous work.}
-Lots of similar projects has been made before. Wine is frequent topic in machine learning used for examples in classifications problems...
-\\
-The same webpage where the dataset was found...
+This data set has been previously used in various projects, as wine appears to be a frequent topic in examples of classification problems in ML. The first one we cite here is the one provided as a relevant paper, \href{https://www.sciencedirect.com/science/article/pii/S0167923609001377?via\%3Dihub}{Modeling wine preferences by data mining from physicochemical properties}. This paper, as it states in its abstract, proposes a data mining approach to predict human taste preferences on wine, through three different types of regression model: multiple regression, neural networks and support vector machines. This goal is similar to ours, but uses models we cannot comment on for the moment, as they have not been explained in class yet.
+
+Apart from the data set webpage, we have looked for other projects that cite and use this data set. Searching through Kaggle we have found some different kernels operating on this data. Some of these use decision tree-based methods and support vector machines so we are not commenting on them either. Even though, they also use linear and generalized linear models to preliminary test variable significance.
+
+The \href{https://www.kaggle.com/indra90/predicting-white-wine-quality}{first kernel} only uses white wine data. One thing to remark about most of the models used on this kernel is that they binarize the quality of the wines into "good" and "not good" and then use the previous stated models and logistic regression.
+In the \href{https://www.kaggle.com/conradws/how-good-is-this-wine-m-l-for-quality-control}{second kernel}, it is remarkable the various ways in which the author tries to gain insight on the data. Initially they use k-Means to cluster data, and then based on the results of this method they visualize the data using a Radial Visualization (RadViz) plot, which we can map into our knowledge as being similar to a biplot. In this way they can observe if there exist any clear tendencies as to variable influence in wine quality. They also pay special attention to anomalies throughout the notebook.
+The \href{https://www.kaggle.com/danielpanizzo/red-and-white-wine-quality}{third kernel} we are commenting on is an exploratory data analysis into the data. In this work it is remarkable the univariate distribution exploration, and especially the fact that this is done separately with white and red wine. This indicates that these two variants might need different treatment, which makes our second task (classification into red or white wine) pertinent in the combined data set.
+
+We found some additional data exploration notebooks: namely, \href{https://rstudio-pubs-static.s3.amazonaws.com/57835_c4ace81da9dc45438ad0c286bcbb4224.html}{this one} performs some comparative plots between variables and their correlations, and \href{http://rstudio-pubs-static.s3.amazonaws.com/219996_9cc8cf9f2e7e41fe8912454c3ad2685a.html}{this other one} also investigates univariate, bivariate and multivariate relationships between variables.
 \section{Data exploration.}
 First of all, the dataset is given into two different tables, on for red wine and the other for white. Then we decided to perform the union and \textbf{obtain an unique dataset}. After that, we extracted the two targets vectors. The first one, wine.type, determine if the wine is red or white and the second one, wine.quality, is the value given by the oenologist. \\ \ \\
 After some exploration, we detected something that we didn't expect: some rows have the exact same values in all the variables. So we concluded that there are \textbf{duplicated rows} in the dataset. So we went back and decided to delate them (only duplicated). But a major problem was found, 2 rows were at the same time in the two original datasets. In this situation we decided, for now, to delate them from both. Because we don't know from where they were and we still have a lot of others rows. \\ \ \\
