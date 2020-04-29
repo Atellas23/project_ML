@@ -8,6 +8,8 @@ output: pdf_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(MASS)
+library(class)
+library(dplyr)
 ```
 
 
@@ -24,29 +26,87 @@ dim(red_w)
 head(white_w)
 dim(white_w)
 ```
+
+```{r}
+red_w <- distinct(red_w)
+white_w <- distinct(white_w)
+
+wine <- rbind(red_w, white_w)
+
+red_w <- red_w[c(-723,-964),]
+white_w <- white_w[c(-2175, -2765),]
+wine <- wine[c(-723,-964),]
+```
+
 ```{r}
 apply(red_w, 2, hist)
 ```
+
 ```{r}
 wine <- rbind(red_w, white_w)
-wine.type <- c(rep("r", 1599), rep("w", 4898))
+wine$type <- c(rep('r', nrow(red_w)), rep('w', nrow(white_w)))
+wine.quality <- wine$quality
+wine.data <- subset(wine, select = -type)
+```
+
+```{r}
+N <- nrow(wine)
+neighbours <- 1:sqrt(N)
+
+loop.k <- function(mydata, mytargets, myneighbours)
+{
+  errors <- matrix(nrow=length(myneighbours), ncol=2)
+  colnames(errors) <- c("k","LOOCV error")
+
+  for (k in myneighbours)
+  {
+    myknn.cv <- knn.cv(mydata, mytargets, k = myneighbours[k])
+  
+    # fill in number of neighbours and LOOCV error
+    errors[k, "k"] <- myneighbours[k]
+  
+    tab <- table(Truth=mytargets, Preds=myknn.cv)
+    errors[k, "LOOCV error"] <- 1 - sum(tab[row(tab)==col(tab)])/sum(tab)
+  }
+  errors
+}
+```
+
+```{r}
+set.seed(123)
+loocv.error <- loop.k(scale(wine.data), wine$type, neighbours)
+plot(loocv.error, type="l", xaxt = "n")
+axis(1, neighbours)
+which.min(loocv.error[,2])
 ```
 
 
 ```{r}
-lda.model <- lda(x=wine, grouping=wine.type)
-loadings.lda <- as.matrix(wine) %*% as.matrix(lda.model$scaling)
-plot(loadings.lda, col=c(rep(1, 1599), rep(2, 4898)))
+lda.model <- lda(type ~ ., data = wine)
+loadings.lda <- as.matrix(wine[-13]) %*% as.matrix(lda.model$scaling)
+plot(loadings.lda, col=c(rep(1, nrow(red_w)), rep(2, nrow(white_w))))
 ```
 
 ```{r}
-lda.model.loocv <- lda(x=wine, grouping=wine.type, CV=TRUE)
-(ct <- table(Truth=wine.type, Pred=lda.model.loocv$class))
+set.seed(3)
+loocv.error.lda <- loop.k(loadings.lda, wine$type, neighbours)
+plot(loocv.error.lda, type='l')#, xaxt='n')
+(kmin <- which.min(loocv_error[,2]))
+```
+
+
+```{r}
+set.seed(123)
+lda.model.loocv <- lda(x=wine[,-13], grouping=wine$type, CV=TRUE)
+(ct <- table(Truth=wine$type, Pred=lda.model.loocv$class))
+1 - sum(ct[row(ct)==col(ct)])/sum(ct)
 ```
 
 ```{r}
-qda.model.loocv <- qda(x=wine, grouping=wine.type, CV=TRUE)
-(ct <- table(Truth=wine.type, Pred=qda.model.loocv$class))
+set.seed(69420)
+qda.model.loocv <- qda(x=wine[,-13], grouping=wine$type, CV=TRUE)
+(ct <- table(Truth=wine$type, Pred=qda.model.loocv$class))
+1 - sum(ct[row(ct)==col(ct)])/sum(ct)
 ```
 
 
