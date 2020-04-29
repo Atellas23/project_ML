@@ -58,7 +58,25 @@
 
 
 \section{Description and goals of the project.}
-Based on \href{http://archive.ics.uci.edu/ml/datasets/Wine+Quality}{this data set} ...
+Our goal with this project is that of obtaining a data-driven understanding of the relationships between the chemical characteristics of wine and features such as its colour or quality. The data in question is \href{http://archive.ics.uci.edu/ml/datasets/Wine+Quality}{this data set} featuring Portuguese wines of the \textit{Vinho Verde} region and shows 4898 instances of wines of 12 and physiochemical qualities of the wine: 
+
+\begin{ennumerate}
+\item fixed acidity
+\item volatile acidity
+\item citric acid
+\item residual sugar
+\item chlorides
+\item free sulfur dioxide
+\item total sulfur dioxide
+\item density
+\item pH
+\item sulphates
+\item alcohol
+\item quality (score between 0 and 10) - Output variable based on sensory data
+\end{ennumerate}
+
+Furthermore, we consider whether the wine is red or white, given that there are two datasets, one for each colour of wine.
+\\ As such, the main objective will be that of classifying the wines into their corresponding colour class as white or red from their physiochemical properties, but also to determine their quality on a scale of 1 to 10 as subjectively decided by a panel of experts from their sensory perceptions of the wine. As such, we will want to see whether there are variables which can strongly predict the final quality of a wine or whether such variables are even relevant in determining such a metric. This is especially relevant since the variables, which are all real numbers, are usually associated with being important qualities for the wine and its final taste. It remains to be seen whether they will be good to predict the final factor variables of colour and quality, and to discern which variables yield better models for the prediction of the target variables.
 
 \section{Related previous work.}
 This data set has been previously used in various projects, as wine appears to be a frequent topic in examples of classification problems in ML. The first one we cite here is the one provided as a relevant paper, \href{https://www.sciencedirect.com/science/article/pii/S0167923609001377?via\%3Dihub}{Modeling wine preferences by data mining from physicochemical properties}. This paper, as it states in its abstract, proposes a data mining approach to predict human taste preferences on wine, through three different types of regression model: multiple regression, neural networks and support vector machines. This goal is similar to ours, but uses models we cannot comment on for the moment, as they have not been explained in class yet. \\ \ \\
