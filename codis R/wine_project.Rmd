@@ -10,11 +10,15 @@ knitr::opts_chunk$set(echo = TRUE)
 library(MASS)
 library(class)
 library(dplyr)
+library(klaR)
+library(magrittr)
+library(caret)
 ```
 
 
 
 ```{r}
+our_seed <- 46290
 red_w <- read.table("winequality-red.csv", sep=';', header = TRUE)
 white_w <- read.table("winequality-white.csv", sep=';', header = TRUE)
 ```
@@ -46,8 +50,27 @@ apply(red_w, 2, hist)
 wine <- rbind(red_w, white_w)
 wine$type <- c(rep('r', nrow(red_w)), rep('w', nrow(white_w)))
 wine.quality <- wine$quality
-wine.data <- subset(wine, select = -type)
+wine.data <- subset(wine, select = 1:11)
 ```
+
+
+Separate data into test and training
+```{r}
+# Randomly separate into learning data and test data
+set.seed(our_seed)
+sample_size <- floor(2/3 * nrow(wine))
+learning_indices <- sample(seq_len(nrow(wine)), size = sample_size)
+learning.data  <- wine[learning_indices, ]
+test.data <- wine[-learning_indices, ]
+```
+
+## TYPE PREDICTION
+```{r}
+lda.model <- lda(type ~ .-quality, data = wine)
+loadings.lda <- as.matrix(wine.data) %*% as.matrix(lda.model$scaling)
+plot(loadings.lda, col=c(rep(2, nrow(red_w)), rep(4, nrow(white_w))), ylab = "Projected coordinates", main = "LDA projection")
+```
+
 
 ```{r}
 N <- nrow(wine)
@@ -73,49 +96,104 @@ loop.k <- function(mydata, mytargets, myneighbours)
 ```
 
 ```{r}
-set.seed(123)
+set.seed(our_seed)
+loocv.error <- loop.k(wine.data, wine$type, neighbours)
+plot(loocv.error, type="l", xaxt = "n")
+axis(1, neighbours)
+kmin <- which.min(loocv.error[,2])
+loocv.error[kmin,]
+```
+
+
+```{r}
+set.seed(our_seed)
 loocv.error <- loop.k(scale(wine.data), wine$type, neighbours)
 plot(loocv.error, type="l", xaxt = "n")
 axis(1, neighbours)
-which.min(loocv.error[,2])
-```
-
-
-```{r}
-lda.model <- lda(type ~ ., data = wine)
-loadings.lda <- as.matrix(wine[-13]) %*% as.matrix(lda.model$scaling)
-plot(loadings.lda, col=c(rep(1, nrow(red_w)), rep(2, nrow(white_w))))
+kmin <- which.min(loocv.error[,2])
+loocv.error[kmin,]
 ```
 
 ```{r}
-set.seed(3)
+set.seed(our_seed)
 loocv.error.lda <- loop.k(loadings.lda, wine$type, neighbours)
 plot(loocv.error.lda, type='l')#, xaxt='n')
-(kmin <- which.min(loocv_error[,2]))
+kmin <- which.min(loocv.error.lda[,2])
+loocv.error.lda[kmin,]
 ```
 
 
 ```{r}
-set.seed(123)
-lda.model.loocv <- lda(x=wine[,-13], grouping=wine$type, CV=TRUE)
+set.seed(our_seed)
+lda.model.loocv <- lda(x=wine.data, grouping=wine$type, CV=TRUE)
 (ct <- table(Truth=wine$type, Pred=lda.model.loocv$class))
 1 - sum(ct[row(ct)==col(ct)])/sum(ct)
 ```
 
 ```{r}
-set.seed(69420)
-qda.model.loocv <- qda(x=wine[,-13], grouping=wine$type, CV=TRUE)
+set.seed(our_seed)
+qda.model.loocv <- qda(x=wine.data, grouping=wine$type, CV=TRUE)
 (ct <- table(Truth=wine$type, Pred=qda.model.loocv$class))
 1 - sum(ct[row(ct)==col(ct)])/sum(ct)
 ```
 
 
 ```{r}
-wine.scale <- scale(wine, center = TRUE, scale = TRUE)
-lda.scale.model.loocv <- lda(x=wine.scale, grouping=wine.type, CV=TRUE)
-(ct <- table(Truth=wine.type, Pred=lda.scale.model.loocv$class))
+set.seed(our_seed)
+rda.model.loocv <- rda(x=wine.data, grouping=wine$type, fold=nrow(wine.data))
+rda.model.loocv$regularization
+```
+We can see how lambda is 1 and gamma is very close to zero, so we should use LDA.
+
+
+#### GLM
+```{r}
+set.seed(our_seed)
+learning.data$type <- factor(learning.data$type)
+# We use LOOCV, so we will use nrow(wine.data) folds
+k <- nrow(wine.data)
+glm_model <- train(form = type ~ .-quality,
+               data = learning.data,
+               trControl = trainControl(method = "cv", number = k),
+               method = "glm",
+               family = "binomial")
+
+# Table of results along with accuracy
+table(learning.data$type, predict(glm_model))
+glm_model
+
+# Real accuracy as calculated over test data
+glm_predicted <- glm_model %>% predict(test.data, type = "raw")
+(glm_table <- table(test.data$type, glm_predicted))
+(glm_error <- 1 - sum(glm_table[row(glm_table)==col(glm_table)])/sum(glm_table))
 ```
 
+## QUALITY PREDICTION
 
+### Regression
+```{r}
+set.seed(our_seed)
+# We use LOOCV, so we will use nrow(wine.data) folds
+k <- nrow(wine.data)
+learning.data$type <- as.factor(learning.data$type)
+test.data$type <- as.factor(test.data$type)
+quality.glm.model <- train(form = quality ~ .,
+               data = learning.data,
+               trControl = trainControl(method = "cv", number = k),
+               method = "lm")
 
+# Table of results along with accuracy
+table(Truth=learning.data$quality, Pred=round(predict(quality.glm.model)))
+quality.glm.model
+
+# Real accuracy as calculated over test data
+glm.predicted <- quality.glm.model %>% predict(test.data, type = "raw")
+glm.predicted <- round(glm.predicted)
+(glm.table <- table(Truth=test.data$quality, Pred=glm.predicted))
+(glm.error <- 1 - sum(glm.table[row(glm.table)==col(glm.table)])/sum(glm.table))
+```
+#### Ridge
+#### LASSO
+
+### Classification
 

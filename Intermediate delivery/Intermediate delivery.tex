@@ -58,7 +58,7 @@
 
 
 \section{Description and goals of the project.}
-Our goal with this project is that of obtaining a data-driven understanding of the relationships between the chemical characteristics of wine and features such as its colour or quality. The data in question is \href{http://archive.ics.uci.edu/ml/datasets/Wine+Quality}{this data set} featuring Portuguese wines of the \textit{Vinho Verde} region and claims to have 4898 instances of wines, even though after looking at the dataset we saw there actually were 6497, and 12 attributes as physiochemical qualities of the wine: \\ 
+Our goal with this project is that of obtaining a data-driven understanding of the relationships between the chemical characteristics of wine and features such as its colour or quality. The data in question is \href{http://archive.ics.uci.edu/ml/datasets/Wine+Quality}{this data set} featuring Portuguese wines of the \textit{Vinho Verde} region and claims to have 4898 instances of wines, even though after looking at the dataset we saw there actually were 6497, and 12 attributes as physiochemical qualities of the wine: \\
 \begin{enumerate}
 \item fixed acidity
 \item volatile acidity
@@ -72,7 +72,7 @@ Our goal with this project is that of obtaining a data-driven understanding of t
 \item sulphates
 \item alcohol
 \item quality (score between 0 and 10) - Output variable based on sensory data
-\end{enumerate} 
+\end{enumerate}
 Furthermore, we consider whether the wine is red or white, given that there are two datasets, one for each colour of wine. \\ \ \\
 As such, the \textbf{main objective} will be that of classifying the wines into their corresponding colour class as white or red from their physicochemical properties, but also to determine their quality on a scale of 0 to 10 as subjectively decided by a panel of experts from their sensory perceptions of the wine. As such, we will want to see whether there are variables which can strongly predict the final quality of a wine or whether such variables are even relevant in determining such a metric. This is especially relevant since the variables, which are all real numbers, are usually associated with being important qualities for the wine and its final taste. All in all, the variable representing the colour of the wine will be predicted from the 11 explanatory variables and the variable representing the quality of the wine will be predicted using the 11 explanatory variables and the colour of the wine as well. It remains to be seen whether they will be good to predict the final factor variables of colour and quality, and to discern which variables yield better models for the prediction of the target variables.
 
@@ -147,12 +147,75 @@ We have added the \textit{quality} variable, as it can help us have an intuition
 
 \section{Modeling methods considered.}
 As well as we have two problems, we will consider two separate approaches: \\ \ \\
-For predicting the \textit{wine.type} variable, we first considered to apply \textbf{lda}, \textbf{qda} and \textbf{rda}. After that, we tried \textbf{knn}, then \textbf{knn scaling the data set} and finally \textbf{knn after applying lda}. The last method we study is a \textbf{glm} using \textit{binomial family}, in particular, the \textit{logistic regression}. \\ \ \\
-As predicting the \textit{wine.quality} can be considered a regression model as a classification model, we tried models from both families. In one hand, we considered \textbf{lm} and in the other hand, we tried \textbf{lda}, \textbf{qda} and \textbf{rda}.
+For predicting the \textit{wine.type} variable, we first considered to apply \textbf{LDA}, \textbf{QDA} and \textbf{RDA}. After that, we tried \textbf{kNN}, then \textbf{kNN scaling the data set} and finally \textbf{kNN after applying LDA}. The last method we study is a \textbf{GLM} using \textit{binomial family}, in particular, the \textit{logistic regression}. \\ \ \\
+As predicting the \textit{wine.quality} can be considered a regression model as a classification model, we tried models from both families. In one hand, we considered \textbf{LM} and in the other hand, we tried \textbf{LDA}, \textbf{QDA} and \textbf{RDA}.
 
 \section{Preliminary results.}
-We have used the original data set without any extracted variables, unless explicitly said so in some sections.
+We have used the original data set without any extracted variables, unless explicitly said so in some sections. We essentially separated our models problem-wise, meaning we have some models for wine type classification and some others for wine quality, for both regression and classification. First of all, we will explain the results for type classification:
+\subsection{Wine type prediction}
+This problem is modeled as a binary classification, and we have used some methods studied in class in order to attain some quite good results.\\ \ \\
+We first of all consider Linear Discriminant Analysis to try to find a good projection direction. When we do this, and project the data onto this reduced space, we are left with a separation that looks like this:
+\begin{figure}[H]
+\centering
+\caption{LDA Projected Coordinates}
+\includegraphics[scale=0.5]{lda_projection}
+\end{figure}
+\ \\
+When we apply leave-one-out cross-validation to this model, we can see from the following table that the prediction error is of approximately 0.4\%:
+\begin{table}[H]
+\caption{Summary of LDA predictions}
+\centering
+\begin{tabular}{|c|c|c|}
+\hline
+ & Predicted red & Predicted white \\ \hline
+True red & 1342 & 15 \\ \hline
+True white & 11 & 3948 \\ \hline
+\end{tabular}
+\end{table}
+\ \\
+Now we consider the Quadratic Discriminant Analysis method. This is considerably worse than LDA to predict wine type, as the summary table looks like this:
+\begin{table}[H]
+\caption{Summary of QDA predictions}
+\centering
+\begin{tabular}{|c|c|c|}
+\hline
+ & Predicted red & Predicted white \\ \hline
+True red & 1342 & 15 \\ \hline
+True white & 59 & 3899 \\ \hline
+\end{tabular}
+\end{table}
+\ \\
+This table amounts to roughly an error of a 1.4\%.\\ \ \\
+Applying RDA, we reached the conclusion that we should directly use LDA, as $\lambda=1$ and $\gamma$ is very close to zero.\\ \ \\
+Now, on to kNN; we applied cross-validation to the method with different values for $k$, from 1 up to the square root of the size of the data set. This way, we can compare and optimize this hyper-parameter, taking the $k$ that minimizes the LOOCV error. First of all, without using any scaling or previously calculated LD's, we have the following graphic to illustrate the LOOCV error for different $k$:
+\begin{figure}[H]
+\centering
+\caption{kNN LOOCV error}
+\includegraphics[scale=0.5]{kNN_LOOCV_error}
+\end{figure}
+The minimum of this is at $k=5$, with a LOOCV error of roughly 5.8\%. If we scale the data, we can see a clear improvement:
+\begin{figure}[H]
+\centering
+\caption{kNN LOOCV error using scaled data}
+\includegraphics[scale=0.5]{kNN_scaled_LOOCV_error}
+\end{figure}
+\ \\
+Now the minimum is at $k=1$ with a LOOCV error of around 0.56\%. We went further and used kNN with data projected onto LDA space, and the LOOCV error results were the following:
+\begin{figure}[H]
+\centering
+\caption{kNN LOOCV error using LDA projected data}
+\includegraphics[scale=0.5]{kNN_LDA_LOOCV_error}
+\end{figure}
+\ \\
+Now the minimum is at $k=9$, with a LOOCV error of 0.51\%. So, for the minimum LOOCV error up until now, we would use this method.\\ \ \\
+In order to use logistic regression, we separated the data set into two pieces, a training and a testing piece, the former of around two thirds of the whole data set and the latter of the remaining third. We applied 10-fold cross-validation and the result was a 0.85\% of misclassification error, so, quite good but not the best we have tried.
+\subsection{Wine Quality Prediction}
 
+To predict the wine quality, as expressed above, we used the mwthods of \textbf{LDA}, \textbf{QDA}, \textbf{RDA}, and used the \textbf{kNN} algorithm.\\ \ \\
+Using \textbf{LM}, we got a testing error of 79.7\%.\\ \ \\
+When performing a \textbf{LDA} and classifying according to the most likely class an accuracy of 0.5496614 was obtained, while for \textbf{QDA} some of the groups were to small in order to be able to perform the analysis accurately, given that the covariance matrix is to be estimated. For instance, the number of wines with a score of 9 was less than the total number of categories, and so this analysis could not be performed with the entirety of the data.\\ \ \\
+For the \textbf{kNN} algorithm, given that the colour variable is a factor type variable, it cannot be directly included to perform the algorithm, as such, two possibilities were considered: that of treating it as a numeric variable equal to 0 or 1 for the two colours, and to disregard the variable completely. In both cases, the algorithm gave similar test accuracies: 0.471219 and 0.46614 respectively when considering the $k=10$ nearest neighbours.\\ \ \\
+Given the distribution of the values in the data set, the algorithm tends to predict mediocre scores for the wines. In other words, given that there were very few outlier wines in the original data set (only five wines had a score of 9) the algorithm cannot predict such a score for wines in the data set. As such, this method is very poor at finding outliers and so it is only partially effective at predicting the score of a wine.
 \section{Future approaches.}
 To accomplish a \textbf{good and simple method}, we will continue trying the methods we already mention. Reducing the number of input variables, adding some extracted variables or with small variations of the methods (like applying \textit{pca} or \textit{lda} before \textit{glm} or \textbf{ridge regression}). In addition, we will consider other methods for classification as well for data exploration. For example, using \textbf{Random Forest}, \textbf{neural networks} or \textbf{clustering}.
 \section{References:}
