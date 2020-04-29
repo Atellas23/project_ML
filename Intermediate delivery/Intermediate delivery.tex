@@ -58,9 +58,8 @@
 
 
 \section{Description and goals of the project.}
-Our goal with this project is that of obtaining a data-driven understanding of the relationships between the chemical characteristics of wine and features such as its colour or quality. The data in question is \href{http://archive.ics.uci.edu/ml/datasets/Wine+Quality}{this data set} featuring Portuguese wines of the \textit{Vinho Verde} region and claims to have 4898 instances of wines, even though after looking at the dataset we saw there actually were 6497, and 12 attributes as physiochemical qualities of the wine: 
-
-\begin{ennumerate}
+Our goal with this project is that of obtaining a data-driven understanding of the relationships between the chemical characteristics of wine and features such as its colour or quality. The data in question is \href{http://archive.ics.uci.edu/ml/datasets/Wine+Quality}{this data set} featuring Portuguese wines of the \textit{Vinho Verde} region and claims to have 4898 instances of wines, even though after looking at the dataset we saw there actually were 6497, and 12 attributes as physiochemical qualities of the wine: \\ 
+\begin{enumerate}
 \item fixed acidity
 \item volatile acidity
 \item citric acid
@@ -73,10 +72,9 @@ Our goal with this project is that of obtaining a data-driven understanding of t
 \item sulphates
 \item alcohol
 \item quality (score between 0 and 10) - Output variable based on sensory data
-\end{ennumerate}
-
-Furthermore, we consider whether the wine is red or white, given that there are two datasets, one for each colour of wine.
-\\ As such, the main objective will be that of classifying the wines into their corresponding colour class as white or red from their physiochemical properties, but also to determine their quality on a scale of 1 to 10 as subjectively decided by a panel of experts from their sensory perceptions of the wine. As such, we will want to see whether there are variables which can strongly predict the final quality of a wine or whether such variables are even relevant in determining such a metric. This is especially relevant since the variables, which are all real numbers, are usually associated with being important qualities for the wine and its final taste. All in all, the variable representing the colour of the wine will be predicted from the 11 explanatory variables and the variable representing the quality of the wine will be predicted using the 11 explanatory variables and the colour of the wine as well. It remains to be seen whether they will be good to predict the final factor variables of colour and quality, and to discern which variables yield better models for the prediction of the target variables.
+\end{enumerate} 
+Furthermore, we consider whether the wine is red or white, given that there are two datasets, one for each colour of wine. \\ \ \\
+As such, the \textbf{main objective} will be that of classifying the wines into their corresponding colour class as white or red from their physicochemical properties, but also to determine their quality on a scale of 0 to 10 as subjectively decided by a panel of experts from their sensory perceptions of the wine. As such, we will want to see whether there are variables which can strongly predict the final quality of a wine or whether such variables are even relevant in determining such a metric. This is especially relevant since the variables, which are all real numbers, are usually associated with being important qualities for the wine and its final taste. All in all, the variable representing the colour of the wine will be predicted from the 11 explanatory variables and the variable representing the quality of the wine will be predicted using the 11 explanatory variables and the colour of the wine as well. It remains to be seen whether they will be good to predict the final factor variables of colour and quality, and to discern which variables yield better models for the prediction of the target variables.
 
 \section{Related previous work.}
 This data set has been previously used in various projects, as wine appears to be a frequent topic in examples of classification problems in ML. The first one we cite here is the one provided as a relevant paper, \href{https://www.sciencedirect.com/science/article/pii/S0167923609001377?via\%3Dihub}{Modeling wine preferences by data mining from physicochemical properties}. This paper, as it states in its abstract, proposes a data mining approach to predict human taste preferences on wine, through three different types of regression model: multiple regression, neural networks and support vector machines. This goal is similar to ours, but uses models we cannot comment on for the moment, as they have not been explained in class yet. \\ \ \\
@@ -120,7 +118,7 @@ The second thing we detected is that the variable \textit{residual.sugar} has a 
 \includegraphics[scale=0.4]{histogram_of_log_residualsugar}
 \end{figure}
 \ \\
-Finally, the other variables' \textit{histograms} have a \textbf{similar shape} in both wine types, but usually with \textbf{different means}. This fact could be useful in order to perform \textit{classification}. And it will be relevant as well for the \textit{regression model} to differentiate the \textit{wine.type} as factors. Here are some of the other \textit{histograms}: \\
+Finally, the other variables \textit{histograms} have a \textbf{similar shape} in both wine types, but usually with \textbf{different means}. This fact could be useful in order to perform \textit{classification}. And it will be relevant as well for the \textit{regression model} to differentiate the \textit{wine.type} as factors. Here are some of the other \textit{histograms}: \\
 \begin{figure}[H]
 \centering
 \caption{Histograms of 4 variables}
@@ -148,11 +146,15 @@ The next thing we can do is a \textbf{bivariate analysis}. We have already seen 
 We have added the \textit{quality} variable, as it can help us have an intuition about which input variables could be useful to predict it. As it can be seen, only few of them have a linear correlation with the target variable. Other variables present mutual correlation, as we suspected.
 
 \section{Modeling methods considered.}
+As well as we have two problems, we will consider two separate approaches: \\ \ \\
+For predicting the \textit{wine.type} variable, we first considered to apply \textbf{lda}, \textbf{qda} and \textbf{rda}. After that, we tried \textbf{knn}, then \textbf{knn scaling the data set} and finally \textbf{knn after applying lda}. The last method we study is a \textbf{glm} using \textit{binomial family}, in particular, the \textit{logistic regression}. \\ \ \\
+As predicting the \textit{wine.quality} can be considered a regression model as a classification model, we tried models from both families. In one hand, we considered \textbf{lm} and in the other hand, we tried \textbf{lda}, \textbf{qda} and \textbf{rda}.
 
 \section{Preliminary results.}
+We have used the original data set without any extracted variables, unless explicitly said so in some sections.
 
 \section{Future approaches.}
-
+To accomplish a \textbf{good and simple method}, we will continue trying the methods we already mention. Reducing the number of input variables, adding some extracted variables or with small variations of the methods (like applying \textit{pca} or \textit{lda} before \textit{glm} or \textbf{ridge regression}). In addition, we will consider other methods for classification as well for data exploration. For example, using \textbf{Random Forest}, \textbf{neural networks} or \textbf{clustering}.
 \section{References:}
 \begin{enumerate}
   \item Web page where the data set can be found:
