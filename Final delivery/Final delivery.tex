@@ -1,0 +1,253 @@
+\documentclass[10pt]{article}
+
+\usepackage{amsmath}                                                                % Math mode $-$ o $$-$$
+\usepackage{amssymb}                                                                % Mathematic symbols
+\usepackage{mathrsfs}                                                               % Caligraphic letters
+\usepackage{amsthm}                                                                 % Theorem-like environments
+
+\usepackage[english]{babel}                                                         % Language (it is important when hyphenating words)
+\usepackage[utf8]{inputenc}                                                         % Accented letters and other strange symbols
+
+\usepackage{graphicx}                                                               % Images
+\usepackage{float}                                                                  % Puts images where they belong
+\usepackage{subcaption}                                                             % Subimages
+\usepackage{wrapfig}                                                                % Text and image on the same line
+\usepackage{subfiles}                                                               % Subfiles
+\usepackage[hidelinks]{hyperref}                                                    % Allows external and internal references
+\usepackage[nameinlink]{cleveref}                                                   % Improves internal references
+\usepackage[super,square]{natbib}                                                   % Easy bibliography
+
+\usepackage{verbatim}                                                               % Verbatim + multiline comments
+\usepackage{anysize}\marginsize{2cm}{2cm}{.5cm}{3cm}                                % Personalizes margins: {L}{R}{U}{D}
+\usepackage{bbm}                                                                    % Allows \1
+\usepackage{mathdots}                                                               % Rising triple dot symbol
+\usepackage{faktor}                                                                 % Fancy rendering of coset sets
+\usepackage{tikz-cd}                                                                % Commutative diagrams
+\usetikzlibrary{babel}                                                              % Avoids interference between tikz-cd i babel
+\usepackage{lipsum}                                                                 % Lorem ipsum dolor sit amet, with \lipsum or \lipsum[1]
+\usepackage{todonotes}                                                              % To indicate something is missing
+\usepackage[normalem]{ulem}
+\usepackage{graphicx}
+
+\usepackage{amsthm}
+\usepackage{xcolor}
+\usepackage{tcolorbox}
+\newtcbox{\mybox}{on line,
+  colframe=blue,colback=blue!10!white,
+  boxrule=0.5pt,arc=4pt,boxsep=0pt,left=6pt,right=6pt,top=6pt,bottom=6pt}
+\usepackage{float}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks = true,
+    filecolor = blue,
+    linkcolor = blue,
+    urlcolor = blue,
+}
+
+\thispagestyle{empty}
+
+\begin{document}
+\begingroup
+  \centering
+  \Huge Wine type and quality determination \\
+  \vskip 0.35cm
+  \LARGE Final delivery\\
+  \vskip 0.25cm
+  \large Aleix Torres i Camps, Àlex Batlle Casellas, Luís Sierra Muntané\\[1.5em]
+\endgroup
+
+
+\section{Description and goals of the project.}
+Our goal with this project is that of obtaining a data-driven understanding of the relationships between the chemical characteristics of wine and features such as its colour or quality. The data in question is \href{http://archive.ics.uci.edu/ml/datasets/Wine+Quality}{this data set} featuring Portuguese wines of the \textit{Vinho Verde} region and claims to have 4898 instances of wines, even though after looking at the dataset we saw there actually were 6497, and 12 attributes as physicochemical properties of the wine: \verb|fixed acidity|, \verb|volatile acidity|, \verb|citric acid|, \verb|residual sugar|, \verb|chlorides|, \verb|free sulfur dioxide|, \verb|total sulfur dioxide|, \verb|density|, \verb|pH|, \verb|sulphates|, \verb|alcohol|, and \verb|quality| (score between 0 and 10) which is the output variable based on sensory data.
+Furthermore, we consider whether the wine is red or white, given that there are two datasets, one for each colour of wine. \\
+
+As such, the \textbf{main objective} will be that of classifying the wines into their corresponding colour class as white or red from their physicochemical properties, but also to determine their quality on a scale of 0 to 10 as subjectively decided by a panel of experts from their sensory perceptions of the wine. As such, we will want to see whether there are variables which can strongly predict the final quality of a wine or whether such variables are even relevant in determining such a metric. This is especially relevant since the variables, which are all real numbers, are usually associated with being important qualities for the wine and its final taste. All in all, the variable representing the colour of the wine will be predicted from the 11 explanatory variables and the variable representing the quality of the wine will be predicted using the 11 explanatory variables and the colour of the wine as well. It remains to be seen whether they will be good to predict the final factor variables of colour and quality, and to discern which variables yield better models for the prediction of the target variables.
+
+\section{Related previous work.}
+This data set has been previously used in various projects, as wine appears to be a frequent topic in examples of classification problems in ML. The first one we cite here is the one provided as a relevant paper, \href{https://www.sciencedirect.com/science/article/pii/S0167923609001377?via\%3Dihub}{Modeling wine preferences by data mining from physicochemical properties}. This paper, as it states in its abstract, proposes a data mining approach to predict human taste preferences on wine, through three different types of regression model: multiple regression, neural networks and support vector machines. This goal is similar to ours, but uses models we cannot comment on for the moment, as they have not been explained in class yet. \\
+
+Apart from the data set webpage, we have looked for other projects that cite and use this data set. Searching through Kaggle we have found some different kernels operating on this data. Some of these use decision tree-based methods and support vector machines so we are not commenting on them either. Even though, they also use linear and generalized linear models to preliminary test variable significance. \\
+
+The \href{https://www.kaggle.com/indra90/predicting-white-wine-quality}{first kernel} only uses white wine data. One thing to remark about most of the models used on this kernel is that they binarize the quality of the wines into "good" and "not good" and then use the previous stated models and logistic regression. \\
+
+In the \href{https://www.kaggle.com/conradws/how-good-is-this-wine-m-l-for-quality-control}{second kernel}, it is remarkable the various ways in which the author tries to gain insight on the data. Initially they use k-Means to cluster data, and then based on the results of this method they visualize the data using a Radial Visualization (RadViz) plot, which we can map into our knowledge as being similar to a biplot. In this way they can observe if there exist any clear tendencies as to variable influence in wine quality. They also pay special attention to anomalies throughout the notebook. \\
+
+The \href{https://www.kaggle.com/danielpanizzo/red-and-white-wine-quality}{third kernel} we are commenting on is an exploratory data analysis into the data. In this work it is remarkable the univariate distribution exploration, and especially the fact that this is done separately with white and red wine. This indicates that these two variants might need different treatment, which makes our second task (classification into red or white wine) pertinent in the combined data set. \\
+
+We found some additional data exploration notebooks: namely, \href{https://rstudio-pubs-static.s3.amazonaws.com/57835_c4ace81da9dc45438ad0c286bcbb4224.html}{this one} performs some comparative plots between variables and their correlations, and \href{http://rstudio-pubs-static.s3.amazonaws.com/219996_9cc8cf9f2e7e41fe8912454c3ad2685a.html}{this other one} also investigates univariate, bivariate and multivariate relationships between variables.
+\section{Data exploration.}
+First of all, the data set is given into two different tables, one for red and the other for white wine. Then we decided to perform the union and \textbf{obtain an unique data set}. After that, we extracted the two target vectors. The first one, \textit{wine.type}, determines if the wine is red or white and the second one, \textit{wine.quality}, is the quality value given by the oenologist. \\
+
+After some exploration, we detected something that we did not expect: some rows have the exact same values in all of the variables, so we concluded that there are \textbf{duplicated rows} in the data set. So we went back and decided to delete the duplicated ones and leave just one of them. But a major problem was found, 2 rows were at the same time in the two original data sets. In this situation we decided, for now, to delete the rows from both tables, as we do not know whether they belong to red or to white wines, and we still have a lot of other rows. \\
+
+Now, we were interested in the \textbf{dimensions of the data set}. So we observed there are 5318 rows and 11 input variables. From these rows, 1357 are red wines and 3959 white. And the table of wine quality with respect to the numbers of rows with that value is:
+\begin{table}[H]
+\caption{Number of wines of each quality}
+\centering
+\begin{tabular}{|c|c|c|c|c|c|c|c|}
+\hline
+wine quality  & 3  & 4   & 5    & 6    & 7    & 8   & 9 \\ \hline
+num. of wines & 30 & 206 & 1751 & 2323 & 855  & 148 & 5 \\ \hline
+\end{tabular}
+\end{table}
+\ \\
+Then, from these information we may extract some conclusions. The first one is that not all possible marks ([0,10]) were given. And more important, \textbf{the data set is unbalanced} with respect to wine type and wine quality. There are three times white wines as red ones and most of the marks are 6's or 5's, followed by 7's, while the other ones have a very small amount. \\
+
+The next thing we did is caring about \textbf{missing values}. After some exploration using \textit{summary} and some \textit{histograms}, the conclusion is that there are no missing values. Although a variable was suspicious, \textit{citric.acid}, because it has a very large amount of 0 values, most of them coming from the white wines. We investigated a little bit on the topic and found that it is a supplement used as a natural preservative or a flavour potential, so we may assume that some wines have no citric acid at all. \\
+
+In the review of the data, some \textbf{outliers} were found. Such as some wine with 1.66 in \textit{citric.acid}, while the 3rd quartile of this variable is 0.4, or another with \textit{residual.sugar} 65.8, while its 3rd quartile is 7.5. For the moment we decided to keep them but we may delete them in the future. \\
+
+So then, we perform a \textbf{particular analysis of each variable}. We saw that all the variables of the new data set are numerical, therefore we can perform computations over them. But two variables seem to be discrete (\textit{free.sulfur.dioxide} and \textit{total.sulfur.dioxide}). One of the target variables is also discrete and the other is a factor of two elements. \\
+
+We start by plotting the \textbf{histograms}, with different colors for each wine type. We detect that for \textit{fixed.acidity}, \textit{volatile.acidity} and \textit{citric.acid}, the two wine types have different behaviours: the white type is more like a normal distribution, while the red is flatter and in some cases looks more like a uniform distribution. These variables have in common that all of them are related to acidity so maybe in the future we might join them and create a unique variable.
+\begin{figure}[H]
+\centering
+\caption{Histograms of 3 variables}
+\includegraphics[scale=0.3]{histogram_of_citricacidity}
+\includegraphics[scale=0.3]{histogram_of_fixedacidity}
+\includegraphics[scale=0.3]{histogram_of_volatileacidity}
+\end{figure}
+The second thing we detected is that the variable \textit{residual.sugar} has a lot of small entries, so we considered applying a logarithm and seeing the result. There is a clear improvement, and something interesting was discovered. The red wine can be modeled as a unique normal distribution while the white wine as two of them, as there are two density regions with a separation between them. So we can treat the logarithm of the \textit{residual.sugar} as a useful \textbf{feature}.
+\begin{figure}[H]
+\centering
+\caption{Histograms of \textit{residual.sugar} and its logarithm}
+\includegraphics[scale=0.4]{histogram_of_residualsugar}
+\includegraphics[scale=0.4]{histogram_of_log_residualsugar}
+\end{figure}
+Finally, the other variables \textit{histograms} have a \textbf{similar shape} in both wine types, but usually with \textbf{different means}. This fact could be useful in order to perform \textit{classification}. And it will be relevant as well for the \textit{regression model} to differentiate the \textit{wine.type} as factors. Here are some of the other \textit{histograms}:
+\begin{figure}[H]
+\centering
+\caption{Histograms of 4 variables}
+\includegraphics[scale=0.4]{histogram_of_chlorides}
+\includegraphics[scale=0.4]{histogram_of_pH}
+\includegraphics[scale=0.4]{histogram_of_sulphates}
+\includegraphics[scale=0.4]{histogram_of_totalsulfurdioxide}
+\end{figure}
+The next thing we considered was performing a \textbf{PCA}, because it can help us visualize the data and start seeing which variables are more relevant to our goal. We made the following \textit{biplot}, where the first two components explain 50\% of the variability.
+\begin{figure}[H]
+\centering
+\caption{PCA biplot}
+\includegraphics[scale=0.75]{PCA_biplot}
+\end{figure}
+As the two groups seem to be separated in the horizontal edge, it seems that the \textbf{density and alcohol variables explain very little about the difference between the groups}. However, variables such as \textit{total.sulfur.dioxide} or \textit{volatile.acidity} do. In the PCA we can also see that \textbf{some variables are correlated}, for example, \textit{total.sulfur.dioxide} and \textit{free.sulfur.dioxide} in positive or \textit{density} and \textit{alcohol} in negative. There is a last thing to observe here, the \textbf{outliers}. There are points that are not only far from the others on one variable, but they are so in multiple of them. We will consider whether to remove them or not.   \\
+
+The next thing we can do is a \textbf{bivariate analysis}. We have already seen that some variables may have correlation among them, thus, it is interesting to do the \textit{correlation matrix}. The following graphic is a representation of it using colored circles. \\
+\begin{figure}[H]
+\centering
+\caption{Correlation matrix}
+\includegraphics[scale=0.5]{matrix_correlation_circles}
+\end{figure}
+We have added the \textit{quality} variable, as it can help us have an intuition about which input variables could be useful to predict it. As it can be seen, only few of them have a linear correlation with the target variable. Other variables present mutual correlation, as we suspected.
+
+\section{Resampling protocol \& Modeling methods considered.}
+
+We have resampled our data in the following way: we have a \textbf{training set}, which has $\frac{2}{3}$ of randomly chosen samples from the whole data set, and a \textbf{testing set}, which has the remaining $\frac{1}{3}$.
+
+As well as we have two problems, we will consider two separate approaches: \\
+
+For predicting the \textit{wine.type} variable, we first considered to apply \textbf{LDA}, \textbf{QDA} and \textbf{RDA}. After that, we tried \textbf{kNN}, then \textbf{kNN scaling the data set} and finally \textbf{kNN after applying LDA}. The last method we study is a \textbf{GLM} using \textit{binomial family}, in particular, the \textit{logistic regression}. \\
+
+As predicting the \textit{wine.quality} can be considered a regression model as a classification model, we tried models from both families. In one hand, we considered \textbf{LM} and in the other hand, we tried \textbf{LDA}, \textbf{QDA} and \textbf{RDA}.
+
+\section{Obtained results.}
+We have used the original data set without any extracted variables, unless explicitly said so in some sections. We essentially separated our models problem-wise, meaning we have some models for wine type classification and some others for wine quality, for both regression and classification. First of all, we will explain the results for type classification:
+\subsection{Wine type prediction}
+This problem is modeled as a binary classification, and we have used some methods studied in class in order to attain some quite good results.\\
+
+We first of all consider Linear Discriminant Analysis to try to find a good projection direction. When we do this, and project the data onto this reduced space, we are left with a separation that looks like this:
+\begin{figure}[H]
+\centering
+\caption{LDA Projected Coordinates}
+\includegraphics[scale=0.5]{lda_projection}
+\end{figure}
+When we apply leave-one-out cross-validation to this model, we can see from the following table that the prediction error is of approximately 0.4\%:
+\begin{table}[H]
+\caption{Summary of LDA predictions}
+\centering
+\begin{tabular}{|c|c|c|}
+\hline
+ & Predicted red & Predicted white \\ \hline
+True red & 1342 & 15 \\ \hline
+True white & 11 & 3948 \\ \hline
+\end{tabular}
+\end{table}
+Now we consider the Quadratic Discriminant Analysis method. This is considerably worse than LDA to predict wine type, as the summary table looks like this:
+\begin{table}[H]
+\caption{Summary of QDA predictions}
+\centering
+\begin{tabular}{|c|c|c|}
+\hline
+ & Predicted red & Predicted white \\ \hline
+True red & 1342 & 15 \\ \hline
+True white & 59 & 3899 \\ \hline
+\end{tabular}
+\end{table}
+This table amounts to roughly an error of a 1.4\%.\\
+
+Applying RDA, we reached the conclusion that we should directly use LDA, as $\lambda=1$ and $\gamma$ is very close to zero.\\
+
+Now, on to kNN; we applied cross-validation to the method with different values for $k$, from 1 up to the square root of the size of the data set. This way, we can compare and optimize this hyper-parameter, taking the $k$ that minimizes the LOOCV error. First of all, without using any scaling or previously calculated LD's, we have the following graphic to illustrate the LOOCV error for different $k$:
+\begin{figure}[H]
+\centering
+\caption{kNN LOOCV error}
+\includegraphics[scale=0.5]{kNN_LOOCV_error}
+\end{figure}
+The minimum of this is at $k=5$, with a LOOCV error of roughly 5.8\%. If we scale the data, we can see a clear improvement:
+\begin{figure}[H]
+\centering
+\caption{kNN LOOCV error using scaled data}
+\includegraphics[scale=0.5]{kNN_scaled_LOOCV_error}
+\end{figure}
+Now the minimum is at $k=1$ with a LOOCV error of around 0.56\%. We went further and used kNN with data projected onto LDA space, and the LOOCV error results were the following:
+\begin{figure}[H]
+\centering
+\caption{kNN LOOCV error using LDA projected data}
+\includegraphics[scale=0.5]{kNN_LDA_LOOCV_error}
+\end{figure}
+Now the minimum is at $k=9$, with a LOOCV error of 0.51\%. So, for the minimum LOOCV error up until now, we would use this method.\\
+
+In order to use logistic regression, we separated the data set into two pieces, a training and a testing piece, the former of around two thirds of the whole data set and the latter of the remaining third. We applied 10-fold cross-validation and the result was a 0.85\% of misclassification error, so, quite good but not the best we have tried.
+\subsection{Wine Quality Prediction}
+
+To predict the wine quality, as expressed above, we used the mwthods of \textbf{LDA}, \textbf{QDA}, \textbf{RDA}, and used the \textbf{kNN} algorithm.\\
+
+Using \textbf{Linear Regression}, we got a testing error of 79.7\%.\\
+
+When performing a \textbf{LDA} and classifying according to the most likely class an accuracy of 0.5496614 was obtained, while for \textbf{QDA} some of the groups were to small in order to be able to perform the analysis accurately, given that the covariance matrix is to be estimated. For instance, the number of wines with a score of 9 was less than the total number of categories, and so this analysis could not be performed with the entirety of the data.\\
+
+For the \textbf{kNN} algorithm, given that the colour variable is a factor type variable, it cannot be directly included to perform the algorithm, as such, two possibilities were considered: that of treating it as a numeric variable equal to 0 or 1 for the two colours, and to disregard the variable completely. In both cases, the algorithm gave similar test accuracies: 0.471219 and 0.46614 respectively when considering the $k=10$ nearest neighbours.\\
+
+Given the distribution of the values in the data set, the algorithm tends to predict mediocre scores for the wines. In other words, given that there were very few outlier wines in the original data set (only five wines had a score of 9) the algorithm cannot predict such a score for wines in the data set. As such, this method is very poor at finding outliers and so it is only partially effective at predicting the score of a wine.
+\section{Final Model \& Estimated generalization error.}
+\section{Scientific and personal conclusions.}
+\section{Possible extensions and known limitations.}
+%\section{Future approaches.}
+%To accomplish a \textbf{good and simple method}, we will continue trying the methods we already mention. Reducing the number of input variables, adding some extracted variables or with small variations of the methods (like applying \textit{pca} or \textit{lda} before \textit{glm} or \textbf{ridge regression}). In addition, we will consider other methods for classification as well for data exploration. For example, using \textbf{Random Forest}, \textbf{neural networks} or \textbf{clustering}.
+\section{References:}
+\begin{enumerate}
+  \item Web page where the data set can be found:
+
+  \href{http://archive.ics.uci.edu/ml/datasets/Wine+Quality}{ http://archive.ics.uci.edu/ml/datasets/Wine+Quality}
+
+  \item Relevant paper (a previous approach):
+
+  \href{https://www.sciencedirect.com/science/article/pii/S0167923609001377?via\%3Dihub}{ https://www.sciencedirect.com/science/article/pii/S0167923609001377?via\%3Dihub}
+
+  \item Kernels that study this data set on Kaggle (\href{www.kaggle.com}{kaggle.com}):
+
+  \href{https://www.kaggle.com/indra90/predicting-white-wine-quality}{First kernel: https://www.kaggle.com/indra90/predicting-white-wine-quality},\\
+  \href{https://www.kaggle.com/conradws/how-good-is-this-wine-m-l-for-quality-control}{Second kernel: https://www.kaggle.com/conradws/how-good-is-this-wine-m-l-for-quality-control},\\
+  \href{https://www.kaggle.com/danielpanizzo/red-and-white-wine-quality}{Third kernel: https://www.kaggle.com/danielpanizzo/red-and-white-wine-quality}.
+
+  \item Exploratory Data Analysis notebooks:
+
+  \href{https://rstudio-pubs-static.s3.amazonaws.com/57835\_c4ace81da9dc45438ad0c286bcbb4224.html}{ https://rstudio-pubs-static.s3.amazonaws.com/57835\_c4ace81da9dc45438ad0c286bcbb4224.html},\\
+  \href{https://rstudio-pubs-static.s3.amazonaws.com/219996\_9cc8cf9f2e7e41fe8912454c3ad2685a.html}{ https://rstudio-pubs-static.s3.amazonaws.com/219996\_9cc8cf9f2e7e41fe8912454c3ad2685a.html}.
+
+
+
+\end{enumerate}
+
+
+
+\end{document} 
