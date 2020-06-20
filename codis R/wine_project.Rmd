@@ -119,9 +119,9 @@ lda.kfcv <- function(target, dd, nfolds = 10) {
     # print(val[target])
     # print(length(lda.pred$class))
     tab <- table(Truth = val[,target], Preds = predicted.class)
-    # cv.err <- c(cv.err, 1 - sum(tab[row(tab)==col(tab)])/sum(tab))
+    cv.err <- c(cv.err, 1 - sum(tab[row(tab)==col(tab)])/sum(tab))
   }
-  # cv.err <- mean(cv.err)
+  cv.err <- mean(cv.err)
 }
 
 cosa <- lda.kfcv("type", training.data, nfolds = 3)
