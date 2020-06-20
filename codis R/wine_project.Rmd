@@ -66,44 +66,8 @@ testing.data <- wine[-training_indices, ]
 
 ## TYPE PREDICTION
 ```{r}
-
-cv.lda <-
-  function (data, model=origin~., yname="origin", K=10, seed=123) {
-    n <- nrow(data)
-    set.seed(seed)
-    datay=data[,yname] #response variable
-    library(MASS)
-    #partition the data into K subsets
-    f <- ceiling(n/K)
-    s <- sample(rep(1:K, f), n)  
-    #generate indices 1:10 and sample n of them  
-    # K fold cross-validated error
-    
-    CV=NULL
-    
-    for (i in 1:K) { #i=1
-      test.index <- seq_len(n)[(s == i)] #test data
-      train.index <- seq_len(n)[(s != i)] #training data
-      
-      #model with training data
-      lda.fit=lda(model, data=data[train.index,])
-      #observed test set y
-      lda.y <- data[test.index, yname]
-      #predicted test set y
-      lda.predy=predict(lda.fit, data[test.index,])$class
-      
-      #observed - predicted on test data
-      error= mean(lda.y!=lda.predy)
-      #error rates 
-      CV=c(CV,error)
-    }
-    #Output
-    list(call = model, K = K, 
-         lda_error_rate = mean(CV), seed = seed)  
-  }
-
 lda.kfcv <- function(target, dd, nfolds = 10) {
-  cat("This function calculates the K-fold CV error of LDA,\nusing all present variables except for the target.\n")
+  cat("This function calculates the K-fold CV error of LDA,using all present variables except for the target.\n")
   set.seed(46290)
   rownames(target) <- NULL
   rownames(dd) <- NULL
@@ -116,8 +80,6 @@ lda.kfcv <- function(target, dd, nfolds = 10) {
     fmla <- as.formula(paste(target,"~."))
     lda.pred <- lda(fmla, data = adj.data) %>% predict(newdata = val)
     predicted.class <- lda.pred$class
-    # print(val[target])
-    # print(length(lda.pred$class))
     tab <- table(Truth = val[,target], Preds = predicted.class)
     cv.err <- c(cv.err, 1 - sum(tab[row(tab)==col(tab)])/sum(tab))
   }
@@ -210,22 +172,22 @@ We can see how lambda is 1 and gamma is very close to zero, so we should use LDA
 #### GLM
 ```{r}
 set.seed(our_seed)
-learning.data$type <- factor(learning.data$type)
+training.data$type <- factor(training.data$type)
 # We use LOOCV, so we will use nrow(wine.data) folds
 k <- nrow(wine.data)
 glm_model <- train(form = type ~ .-quality,
-               data = learning.data,
+               data = training.data,
                trControl = trainControl(method = "cv", number = k),
                method = "glm",
                family = "binomial")
 
 # Table of results along with accuracy
-table(learning.data$type, predict(glm_model))
+table(training.data$type, predict(glm_model))
 glm_model
 
 # Real accuracy as calculated over test data
-glm_predicted <- glm_model %>% predict(test.data, type = "raw")
-(glm_table <- table(test.data$type, glm_predicted))
+glm_predicted <- glm_model %>% predict(testing.data, type = "raw")
+(glm_table <- table(testing.data$type, glm_predicted))
 (glm_error <- 1 - sum(glm_table[row(glm_table)==col(glm_table)])/sum(glm_table))
 ```
 
@@ -236,21 +198,21 @@ glm_predicted <- glm_model %>% predict(test.data, type = "raw")
 set.seed(our_seed)
 # We use LOOCV, so we will use nrow(wine.data) folds
 k <- nrow(wine.data)
-learning.data$type <- as.factor(learning.data$type)
-test.data$type <- as.factor(test.data$type)
+training.data$type <- as.factor(training.data$type)
+testing.data$type <- as.factor(testing.data$type)
 quality.glm.model <- train(form = quality ~ .,
-               data = learning.data,
+               data = training.data,
                trControl = trainControl(method = "cv", number = k),
                method = "lm")
 
 # Table of results along with accuracy
-table(Truth=learning.data$quality, Pred=round(predict(quality.glm.model)))
+table(Truth=training.data$quality, Pred=round(predict(quality.glm.model)))
 quality.glm.model
 
 # Real accuracy as calculated over test data
-glm.predicted <- quality.glm.model %>% predict(test.data, type = "raw")
+glm.predicted <- quality.glm.model %>% predict(testing.data, type = "raw")
 glm.predicted <- round(glm.predicted)
-(glm.table <- table(Truth=test.data$quality, Pred=glm.predicted))
+(glm.table <- table(Truth=testing.data$quality, Pred=glm.predicted))
 (glm.error <- 1 - sum(glm.table[row(glm.table)==col(glm.table)])/sum(glm.table))
 ```
 #### Ridge

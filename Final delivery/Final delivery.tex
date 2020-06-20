@@ -97,7 +97,7 @@ The next thing we did is caring about \textbf{missing values}. After some explor
 
 In the review of the data, some \textbf{outliers} were found. Such as some wine with 1.66 in \textit{citric.acid}, while the 3rd quartile of this variable is 0.4, or another with \textit{residual.sugar} 65.8, while its 3rd quartile is 7.5. For the moment we decided to keep them but we may delete them in the future. \\
 
-So then, we perform a \textbf{particular analysis of each variable}. We saw that all the variables of the new data set are numerical, therefore we can perform computations over them. But two variables seem to be discrete (\textit{free.sulfur.dioxide} and \textit{total.sulfur.dioxide}). One of the target variables is also discrete and the other is a factor of two elements. \\
+So then, we perform a \textbf{particular analysis of each variable}. We saw that all the variables of the new data set are numerical, therefore we can perform computations over them. But two variables seem to be discrete (\textit{free.sulfur.dioxide} and \textit{total.sulfur.dioxide}). One of the target variables is also discrete and the other is a factor of two elements.\\
 
 We start by plotting the \textbf{histograms}, with different colors for each wine type. We detect that for \textit{fixed.acidity}, \textit{volatile.acidity} and \textit{citric.acid}, the two wine types have different behaviours: the white type is more like a normal distribution, while the red is flatter and in some cases looks more like a uniform distribution. These variables have in common that all of them are related to acidity so maybe in the future we might join them and create a unique variable.
 \begin{figure}[H]
@@ -118,10 +118,10 @@ Finally, the other variables \textit{histograms} have a \textbf{similar shape} i
 \begin{figure}[H]
 \centering
 \caption{Histograms of 4 variables}
-\includegraphics[scale=0.4]{histogram_of_chlorides}
-\includegraphics[scale=0.4]{histogram_of_pH}
-\includegraphics[scale=0.4]{histogram_of_sulphates}
-\includegraphics[scale=0.4]{histogram_of_totalsulfurdioxide}
+\includegraphics[scale=0.35]{histogram_of_chlorides}
+\includegraphics[scale=0.35]{histogram_of_pH}
+\includegraphics[scale=0.35]{histogram_of_sulphates}
+\includegraphics[scale=0.35]{histogram_of_totalsulfurdioxide}
 \end{figure}
 The next thing we considered was performing a \textbf{PCA}, because it can help us visualize the data and start seeing which variables are more relevant to our goal. We made the following \textit{biplot}, where the first two components explain 50\% of the variability.
 \begin{figure}[H]
@@ -146,20 +146,20 @@ As we have a large dataset, we can allow ourselves to be computer-friendly and u
 
 As well as we have two problems, we will consider two separate approaches:
 \begin{itemize}
-	\item To predict the type (red or white), we first considered to apply discriminant methods such as \textbf{LDA}, \textbf{QDA} and \textbf{RDA}, as this is a binary classification problem. Also, we considered to apply \textbf{kNN} (with original, scaled and projected data), and \textbf{logistic regression}. We also consider using a \textbf{MLP} and/or a \textbf{RBF-NN} (RBF Neural Network), and finally also decision-tree based methods (a single \textbf{Classification Tree} and a \textbf{Random Forest}).
+	\item To predict the type (red or white), we first considered to apply discriminant methods such as \textbf{LDA}, \textbf{QDA} and \textbf{RDA}, as this is a binary classification problem. Also, we considered to apply \textbf{kNN} (with original, scaled and projected data), and \textbf{Logistic Regression}. We also consider using a \textbf{MLP} and/or a \textbf{RBF-NN} (RBF Neural Network), and finally also \textbf{Random Forest}.
 	\item To predict the quality (0 to 10), we have two different approaches: 
 	\begin{itemize}
-		\item The first one, to perform regression and then round the results to obtain a prediction. This first approach could be done with \textbf{Linear Regression} (regularized with both the LASSO $L^1$ and the Ridge $L^2$ methods), \textbf{MLP/RBF-NN} (with just one neuron in the output layer), and \textbf{Random Forest} with regression trees.
-		\item The second approach would be to perform multi-class classification. This can be done via \textbf{LDA}/\textbf{QDA}/\textbf{RDA} as in the type classification, using \textbf{kNN}
+		\item The first one, to perform multi-class classification. This can be done via \textbf{LDA}/\textbf{QDA}/\textbf{RDA} as in the type classification, or using \textbf{kNN}.
+		\item The second one would be to perform regression and then round the results to obtain a prediction. This first approach could be done with \textbf{Linear Regression} (regularized with both the LASSO $L^1$ and the Ridge $L^2$ methods), \textbf{MLP/RBF-NN} (with just one neuron in the output layer), and \textbf{Random Forest} with regression trees.
+		
 	\end{itemize}		
 \end{itemize}
-
-As predicting the \textit{wine.quality} can be considered a regression model as a classification model, we tried models from both families. In one hand, we considered \textbf{LM} and in the other hand, we tried \textbf{LDA}, \textbf{QDA} and \textbf{RDA}.
 
 \section{Obtained results.}
 We have used the original data set without any extracted variables, unless explicitly said so in some sections. We essentially separated our models problem-wise, meaning we have some models for wine type classification and some others for wine quality, for both regression and classification. First of all, we will explain the results for type classification:
 \subsection{Wine type prediction}
 This problem is modeled as a binary classification, and we have used some methods studied in class in order to attain some quite good results.\\
+% fem RDA i veiem que QDA és caca
 
 We first of all consider Linear Discriminant Analysis to try to find a good projection direction. When we do this, and project the data onto this reduced space, we are left with a separation that looks like this:
 \begin{figure}[H]
@@ -215,6 +215,9 @@ Now the minimum is at $k=9$, with a LOOCV error of 0.51\%. So, for the minimum L
 
 In order to use logistic regression, we separated the data set into two pieces, a training and a testing piece, the former of around two thirds of the whole data set and the latter of the remaining third. We applied 10-fold cross-validation and the result was a 0.85\% of misclassification error, so, quite good but not the best we have tried.
 \subsection{Wine Quality Prediction}
+
+\subsubsection{Classification}
+\subsubsection{Regression}
 
 To predict the wine quality, as expressed above, we used the mwthods of \textbf{LDA}, \textbf{QDA}, \textbf{RDA}, and used the \textbf{kNN} algorithm.\\
 
