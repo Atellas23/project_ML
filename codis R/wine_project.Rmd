@@ -68,7 +68,6 @@ testing.data <- wine[-training_indices, ]
 ```{r}
 lda.kfcv <- function(target, dd, nfolds = 10, seed = 46290) {
   set.seed(seed)
-  rownames(target) <- NULL
   rownames(dd) <- NULL
   n <- nrow(dd)
   folds <- createFolds(seq_len(n), k = nfolds, list = TRUE)
@@ -92,36 +91,65 @@ lda.kfcv <- function(target, dd, nfolds = 10, seed = 46290) {
 
 lda.model <- lda(type ~ .-quality, data = training.data)
 loadings.lda <- as.matrix(training.data[,1:11]) %*% as.matrix(lda.model$scaling)
-plot(loadings.lda, col=c(training.data$type), ylab = "Projected coordinates", main = "LDA projection")
+#plot(loadings.lda, col=c(training.data$type), ylab = "Projected coordinates", main = "LDA projection")
 ```
 
 
 ```{r}
-N <- nrow(wine)
-neighbours <- 1:sqrt(N)
-
-loop.k <- function(mydata, mytargets, myneighbours)
+loop.k <- function(mydata, mytargets, upper.bound)
 {
-  errors <- matrix(nrow=length(myneighbours), ncol=2)
+  errors <- matrix(nrow=upper.bound, ncol=2)
   colnames(errors) <- c("k","LOOCV error")
 
-  for (k in myneighbours)
+  for (i in 1:upper.bound)
   {
-    myknn.cv <- knn.cv(mydata, mytargets, k = myneighbours[k])
+    myknn.cv <- knn.cv(mydata, mytargets, k = i)
   
     # fill in number of neighbours and LOOCV error
-    errors[k, "k"] <- myneighbours[k]
+    errors[i, "k"] <- i
   
     tab <- table(Truth=mytargets, Preds=myknn.cv)
     errors[k, "LOOCV error"] <- 1 - sum(tab[row(tab)==col(tab)])/sum(tab)
   }
   errors
 }
+
+
+
+knn.kfcv <- function(target, dd, num.neighbors, nfolds = 10, seed = 46290) {
+  set.seed(seed)
+  rownames(dd) <- NULL
+  n <- nrow(dd)
+  folds <- createFolds(seq_len(n), k = nfolds, list = TRUE)
+  t <- NULL
+  p <- NULL
+  for (fold in folds) {
+    adj.data <- dd[-fold,]
+    val <- dd[fold,]
+    fmla <- as.formula(paste(target,"~.-quality"))
+    model <- lda(fmla, data = adj.data)
+    adj.lda <- as.matrix(adj.data[,1:11]) %*% as.matrix(model$scaling)
+    val.lda <- as.matrix(val[,1:11]) %*% as.matrix(model$scaling)
+    predicted.class <- knn(train = adj.lda, test = val.lda, cl = adj.data[,target], k = num.neighbors)
+    t <- c(t, val[,target])
+    p <- c(p, predicted.class)
+  }
+  tab <- table(Truth = t, Pred = p)
+}
 ```
 
 ```{r}
+kfcv.err <- NULL
+for (i in 9:19) {
+  
+}
+
+
+(tab <- knn.kfcv(target = "type", dd = training.data, num.neighbors = 9))
+(kNN.kfcv.err <- 1 - sum(tab[row(tab)==col(tab)])/sum(tab))
+
 set.seed(our_seed)
-loocv.error <- loop.k(wine.data, wine$type, neighbours)
+loocv.error <- loop.k(training.data, training.data$type, sqrt(nrow(training.data)))
 plot(loocv.error, type="l", xaxt = "n")
 axis(1, neighbours)
 kmin <- which.min(loocv.error[,2])
