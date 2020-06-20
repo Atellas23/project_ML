@@ -140,12 +140,19 @@ The next thing we can do is a \textbf{bivariate analysis}. We have already seen 
 We have added the \textit{quality} variable, as it can help us have an intuition about which input variables could be useful to predict it. As it can be seen, only few of them have a linear correlation with the target variable. Other variables present mutual correlation, as we suspected.
 
 \section{Resampling protocol \& Modeling methods considered.}
+We have separated our data in the following way: we have a \textbf{training set} which has $\frac{2}{3}$ of randomly chosen samples from the whole data set. We will use this training set for model selection. The remaining $\frac13$ of the data goes to the \textbf{testing set}, which we will not use until we want to assess our selected models' performance on new data.\\
 
-We have resampled our data in the following way: we have a \textbf{training set}, which has $\frac{2}{3}$ of randomly chosen samples from the whole data set, and a \textbf{testing set}, which has the remaining $\frac{1}{3}$.
+As we have a large dataset, we can allow ourselves to be computer-friendly and use \textbf{$K$-fold Cross-Validation} to perform model selection on the training set. So, as usual, this involves separating the data into $K$ different subsamples and perform $K$ experiments with each model, fitting it to $K-1$ folds and calculating its \textbf{validation error} when predicting for the $K$-th fold. Then, these $K$ errors will be averaged and we will have a pretty robust estimation for the true error of the model, the \textbf{cross-validation (CV) error}. Out of all the models we train, we will select the ones with less CV-error, and assess them based on their prediction error on new data.\\
 
-As well as we have two problems, we will consider two separate approaches: \\
-
-For predicting the \textit{wine.type} variable, we first considered to apply \textbf{LDA}, \textbf{QDA} and \textbf{RDA}. After that, we tried \textbf{kNN}, then \textbf{kNN scaling the data set} and finally \textbf{kNN after applying LDA}. The last method we study is a \textbf{GLM} using \textit{binomial family}, in particular, the \textit{logistic regression}. \\
+As well as we have two problems, we will consider two separate approaches:
+\begin{itemize}
+	\item To predict the type (red or white), we first considered to apply discriminant methods such as \textbf{LDA}, \textbf{QDA} and \textbf{RDA}, as this is a binary classification problem. Also, we considered to apply \textbf{kNN} (with original, scaled and projected data), and \textbf{logistic regression}. We also consider using a \textbf{MLP} and/or a \textbf{RBF-NN} (RBF Neural Network), and finally also decision-tree based methods (a single \textbf{Classification Tree} and a \textbf{Random Forest}).
+	\item To predict the quality (0 to 10), we have two different approaches: 
+	\begin{itemize}
+		\item The first one, to perform regression and then round the results to obtain a prediction. This first approach could be done with \textbf{Linear Regression} (regularized with both the LASSO $L^1$ and the Ridge $L^2$ methods), \textbf{MLP/RBF-NN} (with just one neuron in the output layer), and \textbf{Random Forest} with regression trees.
+		\item The second approach would be to perform multi-class classification. This can be done via \textbf{LDA}/\textbf{QDA}/\textbf{RDA} as in the type classification, using \textbf{kNN}
+	\end{itemize}		
+\end{itemize}
 
 As predicting the \textit{wine.quality} can be considered a regression model as a classification model, we tried models from both families. In one hand, we considered \textbf{LM} and in the other hand, we tried \textbf{LDA}, \textbf{QDA} and \textbf{RDA}.
 

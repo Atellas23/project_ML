@@ -59,13 +59,74 @@ Separate data into test and training
 # Randomly separate into learning data and test data
 set.seed(our_seed)
 sample_size <- floor(2/3 * nrow(wine))
-learning_indices <- sample(seq_len(nrow(wine)), size = sample_size)
-learning.data  <- wine[learning_indices, ]
-test.data <- wine[-learning_indices, ]
+training_indices <- sample(seq_len(nrow(wine)), size = sample_size)
+training.data  <- wine[training_indices, ]
+testing.data <- wine[-training_indices, ]
 ```
 
 ## TYPE PREDICTION
 ```{r}
+
+cv.lda <-
+  function (data, model=origin~., yname="origin", K=10, seed=123) {
+    n <- nrow(data)
+    set.seed(seed)
+    datay=data[,yname] #response variable
+    library(MASS)
+    #partition the data into K subsets
+    f <- ceiling(n/K)
+    s <- sample(rep(1:K, f), n)  
+    #generate indices 1:10 and sample n of them  
+    # K fold cross-validated error
+    
+    CV=NULL
+    
+    for (i in 1:K) { #i=1
+      test.index <- seq_len(n)[(s == i)] #test data
+      train.index <- seq_len(n)[(s != i)] #training data
+      
+      #model with training data
+      lda.fit=lda(model, data=data[train.index,])
+      #observed test set y
+      lda.y <- data[test.index, yname]
+      #predicted test set y
+      lda.predy=predict(lda.fit, data[test.index,])$class
+      
+      #observed - predicted on test data
+      error= mean(lda.y!=lda.predy)
+      #error rates 
+      CV=c(CV,error)
+    }
+    #Output
+    list(call = model, K = K, 
+         lda_error_rate = mean(CV), seed = seed)  
+  }
+
+lda.kfcv <- function(target, dd, nfolds = 10) {
+  cat("This function calculates the K-fold CV error of LDA,\nusing all present variables except for the target.\n")
+  set.seed(46290)
+  rownames(target) <- NULL
+  rownames(dd) <- NULL
+  n <- nrow(dd)
+  folds <- createFolds(seq_len(n), k = nfolds, list = TRUE)
+  cv.err <- NULL
+  for (fold in folds) {
+    adj.data <- dd[-fold,]
+    val <- dd[fold,]
+    fmla <- as.formula(paste(target,"~."))
+    lda.pred <- lda(fmla, data = adj.data) %>% predict(newdata = val)
+    predicted.class <- lda.pred$class
+    # print(val[target])
+    # print(length(lda.pred$class))
+    tab <- table(Truth = val[,target], Preds = predicted.class)
+    # cv.err <- c(cv.err, 1 - sum(tab[row(tab)==col(tab)])/sum(tab))
+  }
+  # cv.err <- mean(cv.err)
+}
+
+cosa <- lda.kfcv("type", training.data, nfolds = 3)
+
+
 lda.model <- lda(type ~ .-quality, data = wine)
 loadings.lda <- as.matrix(wine.data) %*% as.matrix(lda.model$scaling)
 plot(loadings.lda, col=c(rep(2, nrow(red_w)), rep(4, nrow(white_w))), ylab = "Projected coordinates", main = "LDA projection")
