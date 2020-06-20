@@ -66,32 +66,33 @@ testing.data <- wine[-training_indices, ]
 
 ## TYPE PREDICTION
 ```{r}
-lda.kfcv <- function(target, dd, nfolds = 10) {
-  cat("This function calculates the K-fold CV error of LDA,using all present variables except for the target.\n")
-  set.seed(46290)
+lda.kfcv <- function(target, dd, nfolds = 10, seed = 46290) {
+  set.seed(seed)
   rownames(target) <- NULL
   rownames(dd) <- NULL
   n <- nrow(dd)
   folds <- createFolds(seq_len(n), k = nfolds, list = TRUE)
   cv.err <- NULL
+  t <- NULL
+  p <- NULL
   for (fold in folds) {
     adj.data <- dd[-fold,]
     val <- dd[fold,]
-    fmla <- as.formula(paste(target,"~."))
+    fmla <- as.formula(paste(target,"~.-quality"))
     lda.pred <- lda(fmla, data = adj.data) %>% predict(newdata = val)
     predicted.class <- lda.pred$class
-    tab <- table(Truth = val[,target], Preds = predicted.class)
-    cv.err <- c(cv.err, 1 - sum(tab[row(tab)==col(tab)])/sum(tab))
+    t <- c(t, val[,target])
+    p <- c(p, predicted.class)
   }
-  cv.err <- mean(cv.err)
+  tab <- table(Truth = t, Pred = p)
 }
 
-cosa <- lda.kfcv("type", training.data, nfolds = 3)
+(tab <- lda.kfcv(target = "type", training.data, nfolds = 10))
+(LDA.kfcv.err <- 1 - sum(tab[row(tab)==col(tab)])/sum(tab))
 
-
-lda.model <- lda(type ~ .-quality, data = wine)
-loadings.lda <- as.matrix(wine.data) %*% as.matrix(lda.model$scaling)
-plot(loadings.lda, col=c(rep(2, nrow(red_w)), rep(4, nrow(white_w))), ylab = "Projected coordinates", main = "LDA projection")
+lda.model <- lda(type ~ .-quality, data = training.data)
+loadings.lda <- as.matrix(training.data[,1:11]) %*% as.matrix(lda.model$scaling)
+plot(loadings.lda, col=c(training.data$type), ylab = "Projected coordinates", main = "LDA projection")
 ```
 
 

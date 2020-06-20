@@ -142,7 +142,7 @@ We have added the \textit{quality} variable, as it can help us have an intuition
 \section{Resampling protocol \& Modeling methods considered.}
 We have separated our data in the following way: we have a \textbf{training set} which has $\frac{2}{3}$ of randomly chosen samples from the whole data set. We will use this training set for model selection. The remaining $\frac13$ of the data goes to the \textbf{testing set}, which we will not use until we want to assess our selected models' performance on new data.\\
 
-As we have a large dataset, we can allow ourselves to be computer-friendly and use \textbf{$K$-fold Cross-Validation} to perform model selection on the training set. So, as usual, this involves separating the data into $K$ different subsamples and perform $K$ experiments with each model, fitting it to $K-1$ folds and calculating its \textbf{validation error} when predicting for the $K$-th fold. Then, these $K$ errors will be averaged and we will have a pretty robust estimation for the true error of the model, the \textbf{cross-validation (CV) error}. Out of all the models we train, we will select the ones with less CV-error, and assess them based on their prediction error on new data.\\
+As we have a large dataset, we can allow ourselves to be computer-friendly and use \textbf{$K$-fold Cross-Validation} to perform model selection on the training set (we will use $K=10$ throughout all of the work). So, as usual, this involves separating the data into $K$ different subsamples and perform $K$ experiments with each model, fitting it to $K-1$ folds and calculating its \textbf{validation error} when predicting for the $K$-th fold. Then, these $K$ errors will be averaged and we will have a pretty robust estimation for the true error of the model, the \textbf{cross-validation (CV) error}. Out of all the models we train, we will select the ones with less CV-error, and assess them based on their prediction error on new data.\\
 
 As well as we have two problems, we will consider two separate approaches:
 \begin{itemize}
@@ -151,47 +151,20 @@ As well as we have two problems, we will consider two separate approaches:
 	\begin{itemize}
 		\item The first one, to perform multi-class classification. This can be done via \textbf{LDA}/\textbf{QDA}/\textbf{RDA} as in the type classification, or using \textbf{kNN}.
 		\item The second one would be to perform regression and then round the results to obtain a prediction. This first approach could be done with \textbf{Linear Regression} (regularized with both the LASSO $L^1$ and the Ridge $L^2$ methods), \textbf{MLP/RBF-NN} (with just one neuron in the output layer), and \textbf{Random Forest} with regression trees.
-		
 	\end{itemize}		
 \end{itemize}
 
 \section{Obtained results.}
 We have used the original data set without any extracted variables, unless explicitly said so in some sections. We essentially separated our models problem-wise, meaning we have some models for wine type classification and some others for wine quality, for both regression and classification. First of all, we will explain the results for type classification:
 \subsection{Wine type prediction}
-This problem is modeled as a binary classification, and we have used some methods studied in class in order to attain some quite good results.\\
+This problem is modeled as a binary classification, and we have used some methods studied in class in order to attain the following results.\\
 % fem RDA i veiem que QDA és caca
 
-We first of all consider Linear Discriminant Analysis to try to find a good projection direction. When we do this, and project the data onto this reduced space, we are left with a separation that looks like this:
-\begin{figure}[H]
-\centering
-\caption{LDA Projected Coordinates}
-\includegraphics[scale=0.5]{lda_projection}
-\end{figure}
-When we apply leave-one-out cross-validation to this model, we can see from the following table that the prediction error is of approximately 0.4\%:
-\begin{table}[H]
-\caption{Summary of LDA predictions}
-\centering
-\begin{tabular}{|c|c|c|}
-\hline
- & Predicted red & Predicted white \\ \hline
-True red & 1342 & 15 \\ \hline
-True white & 11 & 3948 \\ \hline
-\end{tabular}
-\end{table}
-Now we consider the Quadratic Discriminant Analysis method. This is considerably worse than LDA to predict wine type, as the summary table looks like this:
-\begin{table}[H]
-\caption{Summary of QDA predictions}
-\centering
-\begin{tabular}{|c|c|c|}
-\hline
- & Predicted red & Predicted white \\ \hline
-True red & 1342 & 15 \\ \hline
-True white & 59 & 3899 \\ \hline
-\end{tabular}
-\end{table}
-This table amounts to roughly an error of a 1.4\%.\\
+We first of all consider Regularized Discriminant Analysis. Applying it, we reached the conclusion that we should directly use LDA, as $\lambda=1$ and $\gamma$ is very close to zero, so QDA has a very poor performance on this data.\\
 
-Applying RDA, we reached the conclusion that we should directly use LDA, as $\lambda=1$ and $\gamma$ is very close to zero.\\
+
+
+
 
 Now, on to kNN; we applied cross-validation to the method with different values for $k$, from 1 up to the square root of the size of the data set. This way, we can compare and optimize this hyper-parameter, taking the $k$ that minimizes the LOOCV error. First of all, without using any scaling or previously calculated LD's, we have the following graphic to illustrate the LOOCV error for different $k$:
 \begin{figure}[H]
