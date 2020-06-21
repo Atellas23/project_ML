@@ -67,10 +67,10 @@ testing.data <- wine[-training_indices, ]
 ## RDA -> LDA
 ```{r}
 set.seed(our_seed)
-rda.model.loocv <- rda(x=wine.data, grouping=wine$type, fold=nrow(wine.data))
+rda.model.loocv <- rda(x=training.data[,1:11], grouping=training.data$type, fold=nrow(training.data))
 rda.model.loocv$regularization
 ```
-We can see how lambda is 1 and gamma is very close to zero, so we should use LDA.
+We can see how lambda is 1 and gamma is very close to zero, so we should just use LDA.
 
 ```{r}
 lda.kfcv <- function(target, dd, nfolds = 10, seed = 46290) {
@@ -165,26 +165,30 @@ knn.kfcv <- function(target, dd, num.neighbors, nfolds = 10, seed = 46290) {
 # knn amb dades originals
 set.seed(our_seed)
 loocv.error <- loop.k(training.data[,1:11], training.data$type, sqrt(nrow(training.data)))
-plot(loocv.error, type="l", xaxt = "n")
+plot(loocv.error, type="l", xaxt = "n", main = "kNN cv-error (original data)")
 axis(1:sqrt(nrow(training.data)))
 kmin.1 <- which.min(loocv.error[,2])
-loocv.error[kmin.1,]
+min1 <- loocv.error[kmin.1,]
 
 # 
 set.seed(our_seed)
 loocv.error <- loop.k(scale(training.data[,1:11]), training.data$type, sqrt(nrow(training.data)))
-plot(loocv.error, type="l", xaxt = "n")
+plot(loocv.error, type="l", xaxt = "n", main = "kNN cv-error (scaled data)")
+axis(1:sqrt(nrow(training.data)))
 kmin.2 <- which.min(loocv.error[,2])
-loocv.error[kmin.2,]
+min2 <- loocv.error[kmin.2,]
 
 # 
 set.seed(our_seed)
 mod.lda <- lda(type~.-quality, data = training.data)
 training.lda <- as.matrix(training.data[,1:11]) %*% as.matrix(mod.lda$scaling)
 loocv.error.lda <- loop.k(training.lda, training.data$type, sqrt(nrow(training.data)))
-plot(loocv.error.lda, type='l')#, xaxt='n')
+plot(loocv.error.lda, type='l', xaxt='n', main = "kNN cv-error (LDA-projected data)")
+axis(1:sqrt(nrow(training.data)))
 kmin.3 <- which.min(loocv.error.lda[,2])
-loocv.error[kmin.3,]
+min3 <- loocv.error[kmin.3,]
+
+(list("minimum with original data" = min1, "minimum with scaled data" = min2, "minimum with LDA-projected data" = min3))
 ```
 
 
@@ -195,7 +199,7 @@ for (i in 1:25) {
   kNN.kfcv.err <- 1 - sum(tab[row(tab)==col(tab)])/sum(tab)
   kfcv.err <- c(kfcv.err, kNN.kfcv.err)
 }
-plot(c(1:25), kfcv.err)
+plot(c(1:25), kfcv.err, xlab = "number of neighbors")
 
 print(kfcv.err)
 ```
@@ -219,6 +223,36 @@ glm_model <- train(form = type ~ .-quality,
 
 
 ### MLP
+
+```{r}
+set.seed(our_seed)
+# 10-fold CV with 10 repetitions
+trc <- trainControl (method="cv", number=10)
+# we will train the model fixing a large number of units and using weight decay
+(decays <- 10^seq(-2, 0, by=0.2))
+
+# train the model
+mlp.model <- train(form = type ~ .-quality,
+               data = training.data,
+               trControl = trc,
+               method = "nnet",
+               maxit = 200,
+               tuneGrid = expand.grid(.size=20,.decay=decays),
+               trace = FALSE)
+
+# Table of results along with accuracy
+(tab <- table(training.data$type, predict(mlp.model)))
+(mlp.error <- 1 - sum(tab[row(tab)==col(tab)])/sum(tab))
+```
+
+
+### RBF
+
+```{r}
+# 1. trobar centres, nombre de neurones i variàncies
+# 2. entrenar els pesos amb un LM (amb regularització)
+# 3. interpretar la predicció com la probabilitat de pertanyer a la classe 1 (sigui aquesta w o r)
+```
 
 
 
