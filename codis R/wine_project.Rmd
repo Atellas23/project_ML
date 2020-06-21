@@ -14,6 +14,8 @@ library(klaR)
 library(magrittr)
 library(caret)
 library(randomForest)
+library(cclust)
+library(neural)
 ```
 
 
@@ -245,17 +247,6 @@ mlp.model <- train(form = type ~ .-quality,
 (mlp.error <- 1 - sum(tab[row(tab)==col(tab)])/sum(tab))
 ```
 
-
-### RBF
-
-```{r}
-# 1. trobar centres, nombre de neurones i variàncies
-# 2. entrenar els pesos amb un LM (amb regularització)
-# 3. interpretar la predicció com la probabilitat de pertanyer a la classe 1 (sigui aquesta w o r)
-```
-
-
-
 ### Random Forests
 
 ```{r}
@@ -326,30 +317,101 @@ rf.kfcv <- function(target, dd, nfolds = 10, seed = 46290, num_trees) {
 
 ## QUALITY PREDICTION
 
+### Classification
+
+
+
+
 ### Regression
 ```{r}
 set.seed(our_seed)
-# We use LOOCV, so we will use nrow(wine.data) folds
-k <- nrow(wine.data)
+
+k <- 10
 training.data$type <- as.factor(training.data$type)
-testing.data$type <- as.factor(testing.data$type)
 quality.glm.model <- train(form = quality ~ .,
                data = training.data,
                trControl = trainControl(method = "cv", number = k),
                method = "lm")
 
 # Table of results along with accuracy
-table(Truth=training.data$quality, Pred=round(predict(quality.glm.model)))
-quality.glm.model
-
-# Real accuracy as calculated over test data
-glm.predicted <- quality.glm.model %>% predict(testing.data, type = "raw")
-glm.predicted <- round(glm.predicted)
-(glm.table <- table(Truth=testing.data$quality, Pred=glm.predicted))
-(glm.error <- 1 - sum(glm.table[row(glm.table)==col(glm.table)])/sum(glm.table))
+preds <- round(predict(quality.glm.model))
+(linearRegression.kfcv.err <- mean((preds - training.data$quality)^2))
 ```
+
 #### Ridge
+
+```{r}
+lambdas <- seq(6.5,7,0.01)
+
+model.ridge <- lm.ridge(quality~., data = training.data, lambda = lambdas)
+plot(lambdas, model.ridge$GCV, main="GCV of Ridge Regression", type="l", 
+     xlab=expression(lambda), ylab="GCV")
+
+# The optimal lambda is given by
+(lambda.ridge <- lambdas[which.min(model.ridge$GCV)])
+abline (v=lambda.ridge,lty=2)
+```
+
+```{r}
+training.data$type <- as.factor(training.data$type)
+ridge.mod <- lm.ridge(quality~., data = training.data, lambda = lambda.ridge)
+(beta.ridge <- coef(ridge.mod))
+temp.ridge.pred <- beta.ridge[1] + as.matrix(val) %*% beta.ridge[2:11]
+ridge.pred <- round(temp.ridge.pred)
+
+
+
+ridge.kfcv <- function(target, dd, nfolds = 10, seed = 46290) {
+  set.seed(seed)
+  rownames(dd) <- NULL
+  n <- nrow(dd)
+  folds <- createFolds(seq_len(n), k = nfolds, list = TRUE)
+  cv.err <- NULL
+  t <- NULL
+  p <- NULL
+  for (fold in folds) {
+    adj.data <- dd[-fold,]
+    val <- dd[fold,]
+    fmla <- as.formula(paste(target,"~."))
+    ridge.mod <- lm.ridge(fmla, data = adj.data, lambda = lambda.ridge)# %>% predict(newdata = val)
+    beta.ridge <- coef(ridge.mod)
+    temp.ridge.pred <- beta.ridge[1] + as.matrix(val) %*% beta.ridge[2:11]
+    ridge.pred <- round(temp.ridge.pred)
+    t <- c(t, val[,target])
+    p <- c(p, ridge.pred)
+  }
+  mse <- mean((t-p)^2)
+}
+
+(ridge.kfcv.err <- ridge.kfcv("quality", training.data))
+
+```
+
+
 #### LASSO
 
-### Classification
+```{r}
+library(Matrix)
+library(glmnet)
+
+t <- as.matrix(training.data[,1:11], ncol = 11)
+
+training.w <- t[training.data$type == "w",]
+training.r <- t[training.data$type == "r",]
+
+model.lasso.red <- cv.glmnet(as.matrix(training.w), as.numeric(training.data[training.data$type == "w",]$quality), nfolds = 10)
+model.lasso.white <- cv.glmnet(as.matrix(training.r), as.numeric(training.data[training.data$type == "r",]$quality), nfolds = 10)
+
+(lambda.lasso.w <- model.lasso.white$lambda.min)
+(lambda.lasso.r <- model.lasso.red$lambda.min)
+
+plot(model.lasso.red)
+red.kfcv.err <- model.lasso.red$cvm[model.lasso.red$lambda == lambda.lasso.r]
+white.kfcv.err <- model.lasso.red$cvm[model.lasso.red$lambda == lambda.lasso.r]
+
+n.red <- nrow(training.r)
+n.white <- nrow(training.w)
+
+(LASSO.kfcv.err <- (n.red * red.kfcv.err + n.white * white.kfcv.err)/( n.red + n.white ) ) # error total, diria que la fórmula és correcta.
+```
 
