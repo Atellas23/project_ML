@@ -140,30 +140,31 @@ knn.kfcv <- function(target, dd, num.neighbors, nfolds = 10, seed = 46290) {
 
 ```{r}
 kfcv.err <- NULL
-for (i in 9:19) {
-  
+for (i in 4:25) {
+  tab <- knn.kfcv(target="type", dd=training.data, num.neighbors=i)
+  kNN.kfcv.err <- 1 - sum(tab[row(tab)==col(tab)])/sum(tab)
+  kfcv.err <- c(kfcv.err, kNN.kfcv.err)
 }
+plot(c(4:25), kfcv.err)
 
+print(kfcv.err)
 
-(tab <- knn.kfcv(target = "type", dd = training.data, num.neighbors = 9))
-(kNN.kfcv.err <- 1 - sum(tab[row(tab)==col(tab)])/sum(tab))
-
-set.seed(our_seed)
-loocv.error <- loop.k(training.data, training.data$type, sqrt(nrow(training.data)))
-plot(loocv.error, type="l", xaxt = "n")
-axis(1, neighbours)
-kmin <- which.min(loocv.error[,2])
-loocv.error[kmin,]
+#set.seed(our_seed)
+#loocv.error <- loop.k(training.data, training.data$type, sqrt(nrow(training.data)))
+#plot(loocv.error, type="l", xaxt = "n")
+#axis(1, neighbours)
+#kmin <- which.min(loocv.error[,2])
+#loocv.error[kmin,]
 ```
 
 
 ```{r}
-set.seed(our_seed)
-loocv.error <- loop.k(scale(wine.data), wine$type, neighbours)
-plot(loocv.error, type="l", xaxt = "n")
-axis(1, neighbours)
-kmin <- which.min(loocv.error[,2])
-loocv.error[kmin,]
+#set.seed(our_seed)
+#loocv.error <- loop.k(scale(wine.data), wine$type, neighbours)
+#plot(loocv.error, type="l", xaxt = "n")
+#axis(1, neighbours)
+#kmin <- which.min(loocv.error[,2])
+#loocv.error[kmin,]
 ```
 
 ```{r}
