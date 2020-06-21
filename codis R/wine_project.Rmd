@@ -13,6 +13,7 @@ library(dplyr)
 library(klaR)
 library(magrittr)
 library(caret)
+library(randomForest)
 ```
 
 
@@ -43,16 +44,13 @@ wine <- wine[c(-723,-964),]
 ```
 
 ```{r}
-apply(red_w, 2, hist)
-```
-
-```{r}
 wine <- rbind(red_w, white_w)
 wine$type <- c(rep('r', nrow(red_w)), rep('w', nrow(white_w)))
 wine.quality <- wine$quality
 wine.data <- subset(wine, select = 1:11)
 ```
 
+# ----------------------------------------------------------------------------------------
 
 Separate data into test and training
 ```{r}
@@ -64,7 +62,16 @@ training.data  <- wine[training_indices, ]
 testing.data <- wine[-training_indices, ]
 ```
 
-## TYPE PREDICTION
+# ----------------------------------------------------------------------------------------
+
+## RDA -> LDA
+```{r}
+set.seed(our_seed)
+rda.model.loocv <- rda(x=wine.data, grouping=wine$type, fold=nrow(wine.data))
+rda.model.loocv$regularization
+```
+We can see how lambda is 1 and gamma is very close to zero, so we should use LDA.
+
 ```{r}
 lda.kfcv <- function(target, dd, nfolds = 10, seed = 46290) {
   set.seed(seed)
@@ -89,11 +96,27 @@ lda.kfcv <- function(target, dd, nfolds = 10, seed = 46290) {
 (tab <- lda.kfcv(target = "type", training.data, nfolds = 10))
 (LDA.kfcv.err <- 1 - sum(tab[row(tab)==col(tab)])/sum(tab))
 
-lda.model <- lda(type ~ .-quality, data = training.data)
-loadings.lda <- as.matrix(training.data[,1:11]) %*% as.matrix(lda.model$scaling)
+#lda.model <- lda(type ~ .-quality, data = training.data)
+#loadings.lda <- as.matrix(training.data[,1:11]) %*% as.matrix(lda.model$scaling)
 #plot(loadings.lda, col=c(training.data$type), ylab = "Projected coordinates", main = "LDA projection")
 ```
 
+```{r}
+#set.seed(our_seed)
+#lda.model.loocv <- lda(x=wine.data, grouping=wine$type, CV=TRUE)
+#(ct <- table(Truth=wine$type, Pred=lda.model.loocv$class))
+#1 - sum(ct[row(ct)==col(ct)])/sum(ct)
+```
+
+```{r}
+#set.seed(our_seed)
+#qda.model.loocv <- qda(x=wine.data, grouping=wine$type, CV=TRUE)
+#(ct <- table(Truth=wine$type, Pred=qda.model.loocv$class))
+#1 - sum(ct[row(ct)==col(ct)])/sum(ct)
+```
+
+
+# KNN
 
 ```{r}
 loop.k <- function(mydata, mytargets, upper.bound)
@@ -109,7 +132,7 @@ loop.k <- function(mydata, mytargets, upper.bound)
     errors[i, "k"] <- i
   
     tab <- table(Truth=mytargets, Preds=myknn.cv)
-    errors[k, "LOOCV error"] <- 1 - sum(tab[row(tab)==col(tab)])/sum(tab)
+    errors[i, "LOOCV error"] <- 1 - sum(tab[row(tab)==col(tab)])/sum(tab)
   }
   errors
 }
@@ -139,72 +162,50 @@ knn.kfcv <- function(target, dd, num.neighbors, nfolds = 10, seed = 46290) {
 ```
 
 ```{r}
+# knn amb dades originals
+set.seed(our_seed)
+loocv.error <- loop.k(training.data[,1:11], training.data$type, sqrt(nrow(training.data)))
+plot(loocv.error, type="l", xaxt = "n")
+axis(1:sqrt(nrow(training.data)))
+kmin.1 <- which.min(loocv.error[,2])
+loocv.error[kmin.1,]
+
+# 
+set.seed(our_seed)
+loocv.error <- loop.k(scale(training.data[,1:11]), training.data$type, sqrt(nrow(training.data)))
+plot(loocv.error, type="l", xaxt = "n")
+kmin.2 <- which.min(loocv.error[,2])
+loocv.error[kmin.2,]
+
+# 
+set.seed(our_seed)
+mod.lda <- lda(type~.-quality, data = training.data)
+training.lda <- as.matrix(training.data[,1:11]) %*% as.matrix(mod.lda$scaling)
+loocv.error.lda <- loop.k(training.lda, training.data$type, sqrt(nrow(training.data)))
+plot(loocv.error.lda, type='l')#, xaxt='n')
+kmin.3 <- which.min(loocv.error.lda[,2])
+loocv.error[kmin.3,]
+```
+
+
+```{r}
 kfcv.err <- NULL
-for (i in 4:25) {
+for (i in 1:25) {
   tab <- knn.kfcv(target="type", dd=training.data, num.neighbors=i)
   kNN.kfcv.err <- 1 - sum(tab[row(tab)==col(tab)])/sum(tab)
   kfcv.err <- c(kfcv.err, kNN.kfcv.err)
 }
-plot(c(4:25), kfcv.err)
+plot(c(1:25), kfcv.err)
 
 print(kfcv.err)
-
-#set.seed(our_seed)
-#loocv.error <- loop.k(training.data, training.data$type, sqrt(nrow(training.data)))
-#plot(loocv.error, type="l", xaxt = "n")
-#axis(1, neighbours)
-#kmin <- which.min(loocv.error[,2])
-#loocv.error[kmin,]
 ```
 
 
-```{r}
-#set.seed(our_seed)
-#loocv.error <- loop.k(scale(wine.data), wine$type, neighbours)
-#plot(loocv.error, type="l", xaxt = "n")
-#axis(1, neighbours)
-#kmin <- which.min(loocv.error[,2])
-#loocv.error[kmin,]
-```
-
-```{r}
-set.seed(our_seed)
-loocv.error.lda <- loop.k(loadings.lda, wine$type, neighbours)
-plot(loocv.error.lda, type='l')#, xaxt='n')
-kmin <- which.min(loocv.error.lda[,2])
-loocv.error.lda[kmin,]
-```
-
-
-```{r}
-set.seed(our_seed)
-lda.model.loocv <- lda(x=wine.data, grouping=wine$type, CV=TRUE)
-(ct <- table(Truth=wine$type, Pred=lda.model.loocv$class))
-1 - sum(ct[row(ct)==col(ct)])/sum(ct)
-```
-
-```{r}
-set.seed(our_seed)
-qda.model.loocv <- qda(x=wine.data, grouping=wine$type, CV=TRUE)
-(ct <- table(Truth=wine$type, Pred=qda.model.loocv$class))
-1 - sum(ct[row(ct)==col(ct)])/sum(ct)
-```
-
-
-```{r}
-set.seed(our_seed)
-rda.model.loocv <- rda(x=wine.data, grouping=wine$type, fold=nrow(wine.data))
-rda.model.loocv$regularization
-```
-We can see how lambda is 1 and gamma is very close to zero, so we should use LDA.
-
-
-#### GLM
+### GLM
 ```{r}
 set.seed(our_seed)
 training.data$type <- factor(training.data$type)
-# We use LOOCV, so we will use nrow(wine.data) folds
-k <- nrow(wine.data)
+k <- 10
 glm_model <- train(form = type ~ .-quality,
                data = training.data,
                trControl = trainControl(method = "cv", number = k),
@@ -212,14 +213,82 @@ glm_model <- train(form = type ~ .-quality,
                family = "binomial")
 
 # Table of results along with accuracy
-table(training.data$type, predict(glm_model))
-glm_model
-
-# Real accuracy as calculated over test data
-glm_predicted <- glm_model %>% predict(testing.data, type = "raw")
-(glm_table <- table(testing.data$type, glm_predicted))
-(glm_error <- 1 - sum(glm_table[row(glm_table)==col(glm_table)])/sum(glm_table))
+(tab <- table(training.data$type, predict(glm_model)))
+(glm.kfcv.err <- 1 - sum(tab[row(tab)==col(tab)])/sum(tab))
 ```
+
+
+### MLP
+
+
+
+### Random Forests
+
+```{r}
+ntrees <- round(2^seq(1,10))
+ntrees <- seq(150, 300, 10)
+
+
+rf.results <- matrix (rep(0,2*length(ntrees)), nrow=length(ntrees))
+colnames (rf.results) <- c("ntrees", "OOB")
+rf.results[,"ntrees"] <- ntrees
+rf.results[,"OOB"] <- 0
+
+
+ii <- 1
+set.seed(our_seed)
+for (nt in ntrees)
+{ 
+  print(nt)
+  
+  # build forest
+  model.rf <- randomForest(type ~ .-quality, data=training.data, ntree=nt, proximity=FALSE, 
+                           sampsize=c(r=round(0.75*895), w=round(0.75*2649)), strata=training.data$type)
+  
+  # get the OOB and store it appropriately
+  rf.results[ii, "OOB"] <- model.rf$err.rate[nt,1]  
+  ii <- ii+1
+}
+
+rf.results
+```
+
+```{r}
+rf.kfcv <- function(target, dd, nfolds = 10, seed = 46290, num_trees) {
+  set.seed(seed)
+  
+  rownames(dd) <- NULL
+  n <- nrow(dd)
+  
+  folds <- createFolds(seq_len(n), k = nfolds, list = TRUE)
+  
+  cv.err <- NULL
+  t <- NULL
+  p <- NULL
+  
+  for (fold in folds) {
+    adj.data <- dd[-fold,]
+    val <- dd[fold,]
+    fmla <- as.formula(paste(target,"~.-quality"))
+    
+    model.rf1 <- randomForest (fmla, data=adj.data, ntree=num_trees, proximity=FALSE)
+    pred.rf1 <- predict (model.rf1, val, type="class")
+    
+    t <- c(t, val[,target])
+    p <- c(p, pred.rf1)
+  }
+  
+  tab <- table(Truth = t, Pred = p)
+}
+```
+
+
+```{r}
+(tab <- rf.kfcv("type", training.data, num_trees=290))
+(rf.kfcv.err <- 1 - sum(tab[row(tab)==col(tab)])/sum(tab))
+```
+
+
 
 ## QUALITY PREDICTION
 
