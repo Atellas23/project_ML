@@ -37,7 +37,7 @@ regression.model_RBF <- caret::train(quality ~ .,
              trControl = trainControl(method = "cv", number = k),
              method = "rbf")
 
-predict(regression.model_RBF, test.data)
+predict(regression.model_RBF, testing.data)
 
 ## Random Forest
 
@@ -46,7 +46,7 @@ regression.model_RF <- caret::train(quality ~ .,
              trControl = trainControl(method = "cv", number = k),
              method = "rf")
 
-predict(regression.model_RF, test.data)
+predict(regression.model_RF, testing.data)
 
 ## Linear model
 
@@ -55,7 +55,7 @@ regression.model_lm <- caret::train(quality ~ .,
              trControl = trainControl(method = "cv", number = k),
              method = "lm")
 
-predict(regression.model_lm, test.data)
+predict(regression.model_lm, testing.data)
 
 ## MLP
 
@@ -64,4 +64,4 @@ regressio.model_mlp <- caret::train(quality ~ .,
              trControl = trainControl(method = "cv", number = k),
              method = "mlp")
 
-predict(regression.model_mlp, test.data)
+predict(regression.model_mlp, testing.data)
