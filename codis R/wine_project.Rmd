@@ -63,8 +63,26 @@ training_indices <- sample(seq_len(nrow(wine)), size = sample_size)
 training.data  <- wine[training_indices, ]
 testing.data <- wine[-training_indices, ]
 ```
-
 # ----------------------------------------------------------------------------------------
+
+## TYPE CLASSIFICATION
+Prepare the **cross-entropy** function to calculate the binary classification error:
+```{r}
+cross.entropy <- function(prediction, truth) {
+  l <- levels(truth)
+  if (length(levels(truth)) != 2) {
+    return -1
+  }
+  class1 <- l[1]
+  class2 <- l[2]
+  truth[truth == class1] <- 1
+  truth[truth == class2] <- 0
+  prediction[prediction == class1] <- 1
+  prediction[prediction == class2] <- 0
+  
+}
+```
+
 
 ## RDA -> LDA
 ```{r}
@@ -247,6 +265,16 @@ mlp.model <- train(form = type ~ .-quality,
 (mlp.error <- 1 - sum(tab[row(tab)==col(tab)])/sum(tab))
 ```
 
+### RBF
+
+```{r}
+modRBF<- train(type~., 
+    data = training.data, 
+    method = "rbfDDA", 
+    trControl = trainControl(method = "CV", number = 10))
+```
+
+
 ### Random Forests
 
 ```{r}
@@ -262,6 +290,7 @@ rf.results[,"OOB"] <- 0
 
 ii <- 1
 set.seed(our_seed)
+training.data$type <- as.factor(training.data$type)
 for (nt in ntrees)
 { 
   print(nt)
@@ -319,6 +348,37 @@ rf.kfcv <- function(target, dd, nfolds = 10, seed = 46290, num_trees) {
 
 ### Classification
 
+```{r}
+set.seed(our_seed)
+rda.model.10foldcv <- rda(quality~., data = training.data, crossval = TRUE, fold = 10)
+rda.model.10foldcv$regularization
+```
+
+
+```{r}
+lda.kfcv <- function(target, dd, nfolds = 10, seed = 46290) {
+  set.seed(seed)
+  rownames(dd) <- NULL
+  n <- nrow(dd)
+  folds <- createFolds(seq_len(n), k = nfolds, list = TRUE)
+  cv.err <- NULL
+  t <- NULL
+  p <- NULL
+  for (fold in folds) {
+    adj.data <- dd[-fold,]
+    val <- dd[fold,]
+    fmla <- as.formula(paste(target,"~."))
+    lda.pred <- lda(fmla, data = adj.data) %>% predict(newdata = val)
+    predicted.class <- lda.pred$class
+    t <- c(t, val[,target])
+    p <- c(p, predicted.class)
+  }
+  tab <- table(Truth = t, Pred = p)
+}
+
+(tab <- lda.kfcv(target = "quality", training.data, nfolds = 10))
+(LDA.kfcv.err <- 1 - sum(tab[row(tab)==col(tab)])/sum(tab))
+```
 
 
 
@@ -356,7 +416,7 @@ abline (v=lambda.ridge,lty=2)
 training.data$type <- as.factor(training.data$type)
 ridge.mod <- lm.ridge(quality~., data = training.data, lambda = lambda.ridge)
 (beta.ridge <- coef(ridge.mod))
-temp.ridge.pred <- beta.ridge[1] + as.matrix(val) %*% beta.ridge[2:11]
+temp.ridge.pred <- beta.ridge[1] + as.matrix(training.data[,1:11]) %*% beta.ridge[2:12]
 ridge.pred <- round(temp.ridge.pred)
 
 
@@ -373,9 +433,9 @@ ridge.kfcv <- function(target, dd, nfolds = 10, seed = 46290) {
     adj.data <- dd[-fold,]
     val <- dd[fold,]
     fmla <- as.formula(paste(target,"~."))
-    ridge.mod <- lm.ridge(fmla, data = adj.data, lambda = lambda.ridge)# %>% predict(newdata = val)
+    ridge.mod <- lm.ridge(fmla, data = adj.data, lambda = lambda.ridge)
     beta.ridge <- coef(ridge.mod)
-    temp.ridge.pred <- beta.ridge[1] + as.matrix(val) %*% beta.ridge[2:11]
+    temp.ridge.pred <- beta.ridge[1] + as.matrix(val) %*% beta.ridge[2:12]
     ridge.pred <- round(temp.ridge.pred)
     t <- c(t, val[,target])
     p <- c(p, ridge.pred)
