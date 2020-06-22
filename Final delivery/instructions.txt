@@ -1,0 +1,21 @@
+Guidelines to reproduce our results:
+
+1. Data Exploration
+
+Execute in a R enviorement: wine_preprocessing.R
+
+Everything is automatic.
+Then, you will see all the graphics (histograms, biplots, ...) that appear in the document and even more.
+There is also the part where the duplicated rows has been detected.
+
+
+2. Project Models
+
+Execute in a R enviorement: wine_project.R
+
+Everything is almost automatic, some changes can be made. 
+For example, there are chunks that are commented because we didn't use them at all.
+There are also intervals or sequences that there is only the last version we did because is the best approach.
+
+ 
+

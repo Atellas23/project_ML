@@ -29,39 +29,38 @@ training.white <- training.data[training.data$type == "w",]
 testing.data <- wine[-training_indices, ]
 k <- 10
 
+## LASSO
+
+regression.model_lasso <- caret::train(quality ~ .,
+              data = scale(training.data),
+              trControl = trainControl(method = "cv", number = k),
+              method = "lasso")
 
 ## Radial Basis Function
 
 regression.model_RBF <- caret::train(quality ~ .,
-             data = training.data,
+             data = scale(training.data),
              trControl = trainControl(method = "cv", number = k),
-             method = "rbf")
-
-predict(regression.model_RBF, testing.data)
+             method = "rbfDAA")
 
 ## Random Forest
 
 regression.model_RF <- caret::train(quality ~ .,
-             data = training.data,
+             data = scale(training.data),
              trControl = trainControl(method = "cv", number = k),
              method = "rf")
-
-predict(regression.model_RF, testing.data)
 
 ## Linear model
 
 regression.model_lm <- caret::train(quality ~ .,
-             data = training.data,
+             data = scale(training.data),
              trControl = trainControl(method = "cv", number = k),
              method = "lm")
-
-predict(regression.model_lm, testing.data)
 
 ## MLP
 
 regressio.model_mlp <- caret::train(quality ~ .,
-             data = training.data,
+             data = scale(training.data),
              trControl = trainControl(method = "cv", number = k),
-             method = "mlp")
+             method = "mlpWeightDecay")
 
-predict(regression.model_mlp, testing.data)
