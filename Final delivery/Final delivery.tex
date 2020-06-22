@@ -146,48 +146,106 @@ As we have a large dataset, we can allow ourselves to be computer-friendly and u
 
 As well as we have two problems, we will consider two separate approaches:
 \begin{itemize}
-	\item To predict the type (red or white), we first considered to apply discriminant methods such as \textbf{LDA}, \textbf{QDA} and \textbf{RDA}, as this is a binary classification problem. Also, we considered to apply \textbf{kNN} (with original, scaled and LD-projected data), and \textbf{Logistic Regression}. We also consider using a \textbf{MLP} and a \textbf{RBF-NN} (RBF Neural Network), and finally also a \textbf{Random Forest} model.
-	\item To predict the quality (0 to 10), we have two different approaches: 
+	\item To predict the type (red or white), we first considered to apply discriminant methods such as \textbf{LDA}, \textbf{QDA} and \textbf{RDA}, as this is a binary classification problem. Also, we considered to apply \textbf{kNN} (with original, scaled and LD-projected data), and \textbf{Logistic Regression}. We also consider using a \textbf{MLP} and finally also a \textbf{Random Forest} model.
+	\item To predict the quality (0 to 10), we have two different approaches:
 	\begin{itemize}
 		\item The first one, to perform multi-class classification. This can be done via \textbf{LDA}/\textbf{QDA}/\textbf{RDA} as in the type classification, using \textbf{kNN} or using \textbf{Ordinal Regression}.
-		\item The second one would be to perform regression and then round the results to obtain a prediction. This first approach could be done with \textbf{Linear Regression} (regularized with both the LASSO $L^1$ and the Ridge $L^2$ methods), \textbf{MLP/RBF-NN} (with just one neuron in the output layer), and \textbf{Random Forest} with regression trees.
+		\item The second one would be to perform regression and then round the results to obtain a prediction. This first approach could be done with \textbf{Linear Regression} (regularized with both the LASSO $L^1$ and the Ridge $L^2$ methods), \textbf{MLP} and \textbf{RBF-NN} (with just one neuron in the output layer), and \textbf{Random Forest} with regression trees.
 	\end{itemize}		
 \end{itemize}
 
 \section{Obtained results.}
+
 We have used the original data set without any extracted variables, unless explicitly said so in some sections. We essentially separated our models problem-wise, meaning we have some models for wine type classification and some others for wine quality, for both regression and classification. First of all, we will explain the results for type classification:
 \subsection{Wine type prediction}
+
 This problem is modeled as a binary classification. In order to classify the observations, we have used the following methods:
-\paragraph{RDA:}
-% fem RDA i veiem que QDA és caca
+\paragraph{Discriminant Analysis:}
+We first of all consider Regularized Discriminant Analysis, as it is the most general method and may help discard LDA or QDA. Applying it, we reached the conclusion that we should directly use LDA, because RDA regularization parameters are $\lambda=1$ and $\gamma$ very close to zero. Now on to LDA. Using $K$-fold CV, with 13 misclassified observations, we reach a cross-validation error of around 0.37\%.
 
-We first of all consider Regularized Discriminant Analysis. Applying it, we reached the conclusion that we should directly use LDA, as $\lambda=1$ and $\gamma$ is very close to zero.\\
+\begin{table}[H]
+\centering
+\caption{Confusion matrix of LDA}
+\begin{tabular}{ccc}
+ & Pred as White & Pred as Red \\
+Real White & 889 & 6 \\
+Real Red  & 7 & 2642
+\end{tabular}
+\end{table}
 
-Now on to LDA. Using $K$-fold CV, we reach a cross-validation error of around 0.37\%.
-
-
-
-Now, on to kNN; we applied cross-validation to the method with different values for $k$, from 1 up to the square root of the size of the data set. This way, we can compare and optimize this hyper-parameter, taking the $k$ that minimizes the LOOCV error. First of all, without using any scaling or previously calculated LD's, we have the following graphic to illustrate the LOOCV error for different $k$:
+\paragraph{$k$ Nearest Neighbors:}
+Now, on to kNN; as we know that kNN is very sensitive to the scale of the data, we considered three ways to apply this method. The first one, to use the training set with its original scale. The second one, to use scale dataset. And the third one, to use data projected on to LD space. To see if these changes in the dataset affect the predictions, we considered appropriate to plot the LOOCV error with respect to the first few values of $k$. 
 \begin{figure}[H]
 \centering
 \caption{kNN LOOCV error}
 \includegraphics[scale=0.5]{kNN_LOOCV_error}
 \end{figure}
-The minimum of this is at $k=5$, with a LOOCV error of roughly 5.8\%. If we scale the data, we can see a clear improvement:
+In this first approach, we see that the LOOCV decrease quickly and then increases slowly. The minimum error is at $k=5$, with a LOOCV error of roughly 5.8\%. If we scale the data, we can see a clear improvement:
 \begin{figure}[H]
 \centering
 \caption{kNN LOOCV error using scaled data}
 \includegraphics[scale=0.5]{kNN_scaled_LOOCV_error}
 \end{figure}
-Now the minimum is at $k=1$ with a LOOCV error of around 0.56\%. We went further and used kNN with data projected onto LDA space, and the LOOCV error results were the following:
+Now the plot presents a minimum at $k=3$ with a LOOCV error of around 0.59\%, so a major improvement have been made. We went further and used kNN with data projected onto LDA space, and the LOOCV error results were the following:
 \begin{figure}[H]
 \centering
 \caption{kNN LOOCV error using LDA projected data}
 \includegraphics[scale=0.5]{kNN_LDA_LOOCV_error}
 \end{figure}
-Now the minimum is at $k=9$, with a LOOCV error of 0.51\%. So, for the minimum LOOCV error up until now, we would use this method.\\
+Now the plot is more constant to small values, in particular, the minimum is at $k=8$, with a LOOCV error of 0.34\%. So, for the minimum LOOCV error up until now, we would use this method. Now, we proceed to calculate the cross-validation error from 1 to 25 neighbors. There are several minimums, but the first of them is at $k=5$. As we want to have the simplest model, we will use these value instead of any of the larger ones. This error evaluates to around 0.34\% (12 misclassified). The confusion matrix is the following:\\
 
-In order to use logistic regression, we separated the data set into two pieces, a training and a testing piece, the former of around two thirds of the whole data set and the latter of the remaining third. We applied 10-fold cross-validation and the result was a 0.85\% of misclassification error, so, quite good but not the best we have tried.
+\begin{table}[H]
+\centering
+\caption{Confusion matrix of kNN}
+\begin{tabular}{ccc}
+ & Pred as White & Pred as Red \\
+Real White & 890 & 5 \\
+Real Red  & 7 & 2642
+\end{tabular}
+\end{table}
+
+\paragraph{Logistic Regression:} 
+Now we considered a logistic regression model, so a GLM with binomial distribution and logit link. This model gives probabilities of each class, so we had to add a decision boundary for the predicted probability (0.5). In this case the cross-validation error is 0.42\% (15 misclassified), and the confusion matrix is the following:
+
+\begin{table}[H]
+\centering
+\caption{Confusion matrix of Logistic Regression}
+\begin{tabular}{ccc}
+ & Pred as White & Pred as Red \\
+Real White & 889 & 6 \\
+Real Red  & 9 & 2640
+\end{tabular}
+\end{table}
+
+
+
+\paragraph{Multi-Layer Perceptron:}
+In order to adjust a reasonable MLP, we have proceeded by fixing a large number of units in a single hidden layer and using weight decay to regularized the model. We considered a MLP with one hidden layer consisting of 20 fixed neurons and variable weight decay parameter. The best decay parameter was selected by cross-validation, and then we calculated the cross validation error of the MLP using the chosen decay parameter. So the error evaluated to 1.3\% (46 misclassified) and the confusion matrix is:
+
+\begin{table}[H]
+\centering
+\caption{Confusion matrix of MLP}
+\begin{tabular}{ccc}
+ & Pred as White & Pred as Red \\
+Real White & 870 & 25 \\
+Real Red  & 21 & 2628
+\end{tabular}
+\end{table}
+
+\paragraph{Random Forest:}
+Now, we consider a Random Forest model. To adjust the number of decision trees we adjusted models with different values for this parameter and then we selected the one with the least out of bag error. We first iterated through the first ten powers of two, which resulted in 256 trees for the minimum oob error. Then around this value we searched for a better number considering the multiples of ten. The final number of trees is 290. Finally, the cross validation error is 0.45\% (16 misclassified) and the confusion matrix is:
+
+\begin{table}[H]
+\centering
+\caption{Confusion matrix of MLP}
+\begin{tabular}{ccc}
+ & Pred as White & Pred as Red \\
+Real White & 882 & 13 \\
+Real Red  & 3 & 2646
+\end{tabular}
+\end{table}
+
+
 \subsection{Wine quality prediction}
 
 \subsubsection{Classification}
@@ -203,6 +261,38 @@ For the \textbf{kNN} algorithm, given that the colour variable is a factor type 
 
 Given the distribution of the values in the data set, the algorithm tends to predict mediocre scores for the wines. In other words, given that there were very few outlier wines in the original data set (only five wines had a score of 9) the algorithm cannot predict such a score for wines in the data set. As such, this method is very poor at finding outliers and so it is only partially effective at predicting the score of a wine.
 \section{Final Model \& Estimated generalization error.}
+\subsection{Wine type best model}
+Regarding all the models we have considered, the decision of which we have to select is quite straight-forward as there is a model with the smallest error. We have to note that all the models have a pretty small cross-validation error, being the MLP the greatest. It is very likely that this last model overfits the data. This is a summary of all the models we have considered alongside with their respective errors:
+
+\begin{table}[H]
+\centering
+\caption{Summary of the models and errors}
+\begin{tabular}{ccc}
+\textbf{Model} & \textbf{Num. Misclassified} & \textbf{\% Misclassified} \\
+LDA & 13 & 0.37 \% \\
+kNN & 12 & 0.34 \% \\
+Logistic Regression & 15 & 0.42 \% \\
+MLP & 46 & 1.3 \% \\
+Random Forest & 16 & 0.45 \%
+\end{tabular}
+\end{table}
+
+Clearly, the least error belongs to the kNN model using the LD projected data and $k=5$. Finally, the testing error is 0.96\% (17 misclassified) and the confusion matrix is:
+
+\begin{table}[H]
+\centering
+\caption{Confusion matrix of kNN}
+\begin{tabular}{ccc}
+ & Pred as White & Pred as Red \\
+Real White & 454 & 8 \\
+Real Red  & 9 & 1301
+\end{tabular}
+\end{table}
+
+
+
+\subsection{ best model}
+
 \section{Scientific and personal conclusions.}
 \section{Possible extensions and known limitations.}
 %\section{Future approaches.}
