@@ -252,11 +252,25 @@ Real Red  & 3 & 2646
 
 In this part, we consider the problem of the determining the quality as a multi-class classification problem. We will see that these methods have pretty bad results: this may be due to the classes (which here are the wine marks) being unbalanced. For this reason this section is quite brief.
 
-\paragraph{LDA:}
+\paragraph{Discriminant Analysis:} First of all, we have to note that due to some classes having less observations than variables, we cannot perform QDA. So, we directly jump to RDA, whose regularization parameters point towards using only LDA. Then, we adjust a LDA model with the training set, and its cross-validation error amounts to around 45.91\% (1627 misclassified). The confusion matrix is the following:
 
+\begin{table}[H]
+\centering
+\caption{Confusion matrix of LDA}
+\begin{tabular}{cccccccc}
+       & Pred 3 & Pred 4 & Pred 5 & Pred 6 & Pred 7 & Pred 8 & Pred 9 \\
+Real 3 & 2 & 0 & 9 & 9 & 1 & 0 & 0 \\
+Real 4 & 3 & 1 & 76 & 46 & 3 & 0 & 0 \\
+Real 5 & 2 & 2 & 674 & 467 & 10 & 0 & 1\\
+Real 6 & 1 & 1 & 354 & 1086 & 136 & 0 & 1\\
+Real 7 & 0 & 0 & 21 & 378 & 154 & 0 & 0\\
+Real 8 & 0 & 0 & 3 & 63 & 36 & 0 & 0\\
+Real 9 & 0 & 0 & 0 & 1 & 3 & 0 & 0
+\end{tabular}
+\end{table}
+We can see that this is a pretty bad model, maybe due to the classes being unbalanced as we have said before.
 
-
-\paragraph{kNN:}
+\paragraph{kNN:} So, now on to kNN again. This time, when we check the LOOCV errors to see what is the kNN method (original data, scaled data and LD-projected data) that gives better results, as we did before with the type classification, we see that it is again the one using LD-projected data. So, again our 10-fold cross-validation error function will project the data on to LD space and then perform the kNN classification on this data. Also, we have chosen the $k$ as before, but the minimum is now around $k=55$. To choose the appropriate $k$, we loop over the interval $[50,59]$ and choose the $k$ with the least cross-validation error; we bound the interval with 59 as it is approximately the square root of the number of rows in the training set, and this is a well-known boundary for the number of neighbors.
 
 
 
