@@ -155,7 +155,7 @@ As well as we have two problems, we will consider two separate approaches:
 	\item To predict the type (red or white), we first considered to apply discriminant methods such as \textbf{LDA}, \textbf{QDA} and \textbf{RDA}, as this is a binary classification problem. Also, we considered to apply \textbf{kNN} (with original, scaled and LD-projected data), and \textbf{Logistic Regression}. We also consider using a \textbf{MLP} and finally also a \textbf{Random Forest} model.
 	\item To predict the quality (0 to 10), we have two different approaches:
 	\begin{itemize}
-		\item The first one, to perform multi-class classification. This can be done via \textbf{LDA}/\textbf{QDA}/\textbf{RDA} as in the type classification, using \textbf{kNN} or using \textbf{Ordinal Regression}.
+		\item The first one, to perform multi-class classification. This can be done via \textbf{LDA}/\textbf{QDA}/\textbf{RDA} as in the type classification, or using \textbf{kNN}.
 		\item The second one would be to perform regression and then round the results to obtain a prediction. This first approach could be done with \textbf{Linear Regression} (regularized with both the LASSO $L^1$ and the Ridge $L^2$ methods), \textbf{MLP} and \textbf{RBF-NN} (with just one neuron in the output layer), and \textbf{Random Forest} with regression trees.
 	\end{itemize}		
 \end{itemize}
@@ -287,6 +287,7 @@ We can see that this is a pretty bad model, maybe due to the classes being unbal
 The minimum here is attained at $k=8$ neighbors, where the CV error is around 49.18\%. Again, this model is not able to predict accurately the quality of the wine. Given the distribution of the values in the data set, the algorithm tends to predict mediocre scores for the wines. In other words, given that there are very few outlier wines in the original data set (only five wines had a score of 9) the algorithm cannot predict such a score for wines in the data set. As such, this method is very poor at finding outliers and so it is only partially effective at predicting the score of a wine.
 
 \subsubsection{Regression}
+\ \\
 
 Instead of trying to solve the quality problem using classification methods, another possibility is that of trying to do so using some kind of regression algorithm. The reason for this is that of trying to make use of the ordinal structure of the classes, in the sense that two "good" wines valued with a score of 7 and 8 could be more similar amongst themselves than to a third wine with a lower score. That being said, due to the different units and scales among the attributes, the data was first standardised in order to perform the regression analysis without the aforestated concerns.
 
@@ -296,7 +297,7 @@ Firstly, considering a LASSO regression using all of the predictor variables, th
 
 \paragraph{Ridge Regression:}
 
-In a similar fashion to the LASSO regression, a ridge regression was used to fit the data and the model that produced the lowest error was selected after the round of cross-validation. This minimum error produced was found with a penalising parameter of $\lambda=6.7$.
+In a similar fashion to the LASSO regression, a ridge regression was used to fit the data and the model that produced the lowest error was selected after the round of cross-validation. This minimum error produced was found with a penalising parameter of $\lambda=28.159$, and the error amounted to approximately 0.797.
 
 \paragraph{MLP:}
 
@@ -304,16 +305,18 @@ A multi-layered-perceptron model was trained by considering a regularised networ
 
 \paragraph{Random Forest:}
 
-When considering a random forest for regression, the results over the training data were found by measuring the least out-of-bag error over the models while iterating over the number of variables to split at each node, comparing the mean squared error of each model. The number of splitting variables yielding the minimum error was 2 with a root mean square error of 0.78, where splitting over more variables failed to improve on such values, possibly due to lower generalisation. The R-squared value of the preferred model was 0.40.
+When considering a random forest for regression, the results over the training data were found by measuring the least out-of-bag error over the models while iterating over the number of variables to split at each node, comparing the mean squared error of each model. The number of splitting variables yielding the minimum error was 2 with a mean square error of 0.61, where splitting over more variables failed to improve on such values, possibly due to lower generalisation. The R-squared value of the preferred model was 0.40.
 
 \paragraph{RBF:}
 
-Now, to use a Radial Basis Function model on the data we considered a number of prototypical examples selected using a non-supervised clustering algorithm and then implemented the RBF using those starting points. The number of prototypes was determined via the cross-validation method, as usual, and the model selected was the one with the smallest error. The final values were attained after around 4000 iterations and using 354 prototypes, with a final error of 0.96.
+Now, to use a Radial Basis Function model on the data we considered a number of prototypical examples selected using a non-supervised clustering algorithm and then implemented the RBF using those starting points. The number of prototypes was determined via the cross-validation method, as usual, and the model selected was the one with the smallest error. The final values were attained after around 4000 iterations and using 354 prototypes, with a final error of 0.96.\\
 
 Therefore, we can consider the LASSO regression model to be the best since it has the lowest overall MSE out of the models considered.
 
 \section{Final Model \& Estimated generalization error.}
 \subsection{Wine type best model}
+\ \\
+
 Regarding all the models we have considered, the decision of which we have to select is quite straight-forward as there is a model with the smallest error. We have to note that all the models have a pretty small cross-validation error, being the MLP the greatest. It is very likely that this last model overfits the data. This is a summary of all the models we have considered alongside with their respective errors:
 
 \begin{table}[H]
@@ -352,13 +355,22 @@ As can be seen, test error is quite larger than the training error. Although thi
 It appears that the \% testing errors adjust to a normal distribution centered at 0.56\%. Indeed, the most common error is this which corresponds to 10 misclassified observations. Therefore, the test error that we first obtained was greater than the mean, so the model we chose did not overfit at all.
 
 \subsection{Wine quality best model}
+\ \\
 
+Therefore, we can consider the Random Forest model to be the best since it has the lowest overall MSE out of the models considered. The error from the test data when using this model was 0.78, and so even though this is higher than the validation error, we can assume that the overfit to the training data was not too significant but noticeable. As such, the generalisation to unseen data sufferes from overfitting the data.
 \section{Conclusions.}
 \subsection{Scientific and personal conclusions.}
 We have attained pretty good results in the type classification; surely there are different explanations regarding this, but we think it is mostly due to the notable chemical differences between both classes of wine. We observed these differences back in the data exploration section, and they allow quite a good separation as we have seen. Also, our final classification model performed quite well on the testing data set, with an estimated generalization error of less than 1\%. We consider it to be an interesting model, as it is a combination of two steps, a dimensionality reduction step and the classification step in itself.\\
 
-In the quality prediction, things have not been as good for the classification approach as they have been for the type classification. We think that this is mainly due to the fact that the multiple "classes" (from 1 to 10) were very unbalanced, and hindered our models very much. In the kNN model in particular, we tried the three approaches (as can be seen in the code), and only the scaled data approach worked better than LD-projected data, by just 1\% of the CV error. For the regression approach,
+In the quality prediction, things have not been as good for the classification approach as they have been for the type classification. We think that this is mainly due to the fact that the multiple "classes" (from 1 to 10) were very unbalanced, and hindered our models very much. In the kNN model in particular, we tried the three approaches (as can be seen in the code), and only the scaled data approach worked better than LD-projected data, by just 1\% of the CV error. \\
+
+The regression approach,, irrespecitve of the final results obtained, had some serious shortcomings. This is because the quality of a wine is a relatively subjective metric that is ranked on a scale of 1 to 10, and so the bounds on the quality of a wine make regression unsuitable from a theoretical point of view given that theoretically a regression would be able to produce results outside of the aforementioned bounds.
 \subsection{Possible extensions and known limitations.}
+\ \\
+
+We could have separated the rows where the classifiers most frequently failed, to deduce from them some kind of pattern. This would have most certainly allowed us to predict better their class than we have done.\\
+
+We could have used also other models for both problems. But, we think that the amount of models that we have adjusted is enough to see the possibilities of our data set.
 %\section{Future approaches.}
 %To accomplish a \textbf{good and simple method}, we will continue trying the methods we already mention. Reducing the number of input variables, adding some extracted variables or with small variations of the methods (like applying \textit{pca} or \textit{lda} before \textit{glm} or \textbf{ridge regression}). In addition, we will consider other methods for classification as well for data exploration. For example, using \textbf{Random Forest}, \textbf{neural networks} or \textbf{clustering}.
 \section{References.}

@@ -750,9 +750,9 @@ ridge.kfcv <- function(target, dd, nfolds = 10, seed = 46290) {
   t <- NULL
   p <- NULL
   for (fold in folds) {
-    adj.data <- as.data.frame(scale(dd[-fold,1:11]))
-    val <- scale(dd[fold,1:11])
-    ridge.mod <- lm.ridge(dd$quality~., data = adj.data, lambda = lambda.ridge)
+    adj.data <- as.data.frame(scale(dd[-fold,]))
+    val <- scale(dd[fold,])
+    ridge.mod <- lm.ridge(adj.data$quality~., data = adj.data, lambda = lambda.ridge)
     beta.ridge <- coef(ridge.mod)
     temp.ridge.pred <- beta.ridge[1] + as.matrix(val[,1:11]) %*% beta.ridge[2:12]
     ridge.pred <- round(temp.ridge.pred)
@@ -762,7 +762,11 @@ ridge.kfcv <- function(target, dd, nfolds = 10, seed = 46290) {
   mse <- mean((t-p)^2)
 }
 
-(ridge.kfcv.err <- ridge.kfcv("training.data$quality", training.data))
+ridge.kfcv.err.w <- ridge.kfcv("quality", training.white[,-13])
+ridge.kfcv.err.r <- ridge.kfcv("quality", training.red[,-13])
+
+(ridge.kfcv.err <- (nrow(training.white)*ridge.kfcv.err.w + nrow(training.red)*ridge.kfcv.err.r)/(nrow(training.red)+nrow(training.white)))
+
 lambda.ridge
 ```
 
