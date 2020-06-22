@@ -146,10 +146,10 @@ As we have a large dataset, we can allow ourselves to be computer-friendly and u
 
 As well as we have two problems, we will consider two separate approaches:
 \begin{itemize}
-	\item To predict the type (red or white), we first considered to apply discriminant methods such as \textbf{LDA}, \textbf{QDA} and \textbf{RDA}, as this is a binary classification problem. Also, we considered to apply \textbf{kNN} (with original, scaled and LD-projected data), and \textbf{Logistic Regression}. We also consider using a \textbf{MLP} and/or a \textbf{RBF-NN} (RBF Neural Network), and finally also a \textbf{Random Forest} model.
+	\item To predict the type (red or white), we first considered to apply discriminant methods such as \textbf{LDA}, \textbf{QDA} and \textbf{RDA}, as this is a binary classification problem. Also, we considered to apply \textbf{kNN} (with original, scaled and LD-projected data), and \textbf{Logistic Regression}. We also consider using a \textbf{MLP} and a \textbf{RBF-NN} (RBF Neural Network), and finally also a \textbf{Random Forest} model.
 	\item To predict the quality (0 to 10), we have two different approaches: 
 	\begin{itemize}
-		\item The first one, to perform multi-class classification. This can be done via \textbf{LDA}/\textbf{QDA}/\textbf{RDA} as in the type classification, or using \textbf{kNN}.
+		\item The first one, to perform multi-class classification. This can be done via \textbf{LDA}/\textbf{QDA}/\textbf{RDA} as in the type classification, using \textbf{kNN} or using \textbf{Ordinal Regression}.
 		\item The second one would be to perform regression and then round the results to obtain a prediction. This first approach could be done with \textbf{Linear Regression} (regularized with both the LASSO $L^1$ and the Ridge $L^2$ methods), \textbf{MLP/RBF-NN} (with just one neuron in the output layer), and \textbf{Random Forest} with regression trees.
 	\end{itemize}		
 \end{itemize}
@@ -157,10 +157,11 @@ As well as we have two problems, we will consider two separate approaches:
 \section{Obtained results.}
 We have used the original data set without any extracted variables, unless explicitly said so in some sections. We essentially separated our models problem-wise, meaning we have some models for wine type classification and some others for wine quality, for both regression and classification. First of all, we will explain the results for type classification:
 \subsection{Wine type prediction}
-This problem is modeled as a binary classification, and we have used some methods studied in class in order to attain the following results.\\
+This problem is modeled as a binary classification. In order to classify the observations, we have used the following methods:
+\paragraph{RDA:}
 % fem RDA i veiem que QDA és caca
 
-We first of all consider Regularized Discriminant Analysis. Applying it, we reached the conclusion that we should directly use LDA, as $\lambda=1$ and $\gamma$ is very close to zero, so QDA has a very poor performance on this data.\\
+We first of all consider Regularized Discriminant Analysis. Applying it, we reached the conclusion that we should directly use LDA, as $\lambda=1$ and $\gamma$ is very close to zero.\\
 
 Now on to LDA. Using $K$-fold CV, we reach a cross-validation error of around 0.37\%.
 
@@ -187,7 +188,7 @@ Now the minimum is at $k=1$ with a LOOCV error of around 0.56\%. We went further
 Now the minimum is at $k=9$, with a LOOCV error of 0.51\%. So, for the minimum LOOCV error up until now, we would use this method.\\
 
 In order to use logistic regression, we separated the data set into two pieces, a training and a testing piece, the former of around two thirds of the whole data set and the latter of the remaining third. We applied 10-fold cross-validation and the result was a 0.85\% of misclassification error, so, quite good but not the best we have tried.
-\subsection{Wine Quality Prediction}
+\subsection{Wine quality prediction}
 
 \subsubsection{Classification}
 \subsubsection{Regression}
