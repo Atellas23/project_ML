@@ -570,7 +570,7 @@ min3 <- loocv.error.lda[kmin.3,]
 ```
 
 ```{r}
-knn.kfcv <- function(target, dd, num.neighbors, nfolds = 10, seed = 46290) {
+knn.lda.kfcv <- function(target, dd, num.neighbors, nfolds = 10, seed = 46290) {
   set.seed(seed)
   rownames(dd) <- NULL
   n <- nrow(dd)
@@ -590,32 +590,114 @@ knn.kfcv <- function(target, dd, num.neighbors, nfolds = 10, seed = 46290) {
   }
   tab <- table(Truth = t, Pred = p)
 }
+
+knn.scaled.kfcv <- function(target, dd, num.neighbors, nfolds = 10, seed = 46290) {
+  set.seed(seed)
+  rownames(dd) <- NULL
+  n <- nrow(dd)
+  folds <- createFolds(seq_len(n), k = nfolds, list = TRUE)
+  t <- NULL
+  p <- NULL
+  for (fold in folds) {
+    adj.data <- scale(dd[-fold,1:11])
+    adj.class <- dd[-fold,target]
+    val <- scale(dd[fold,1:11])
+    predicted.class <- knn(train = adj.data, test = val, cl = adj.class, k = num.neighbors)
+    t <- c(t, dd[fold,target])
+    p <- c(p, predicted.class)
+  }
+  tab <- table(Truth = t, Pred = p)
+}
+
+knn.original.kfcv <- function(target, dd, num.neighbors, nfolds = 10, seed = 46290) {
+  set.seed(seed)
+  rownames(dd) <- NULL
+  n <- nrow(dd)
+  folds <- createFolds(seq_len(n), k = nfolds, list = TRUE)
+  t <- NULL
+  p <- NULL
+  for (fold in folds) {
+    adj.data <- dd[-fold,1:11]
+    adj.class <- dd[-fold,target]
+    val <- dd[fold,1:11]
+    predicted.class <- knn(train = adj.data, test = val, cl = adj.class, k = num.neighbors)
+    t <- c(t, dd[fold,target])
+    p <- c(p, predicted.class)
+  }
+  tab <- table(Truth = t, Pred = p)
+}
 ```
 
 
 
 ```{r}
+# LDA projected data
 kfcv.err <- NULL
 for (i in 1:59) {
-  tab <- knn.kfcv(target = "quality", dd = training.data[,-13], num.neighbors = i)
+  tab <- knn.lda.kfcv(target = "quality", dd = training.data[,-13], num.neighbors = i)
   kNN.kfcv.err <- 1 - sum(tab[row(tab) == col(tab)])/sum(tab)
   kfcv.err <- c(kfcv.err, kNN.kfcv.err)
 }
-plot(c(1:59), kfcv.err, xlab = "number of neighbors", main = "10fold cv error for wine quality prediction")
+plot(c(1:59), kfcv.err, xlab = "number of neighbors")
 (k.min <- which.min(kfcv.err))
-kfcv.err[k.min]
+kfcv.err[k.min]*100
+```
+```{r}
+# scaled data
+kfcv.err <- NULL
+for (i in 1:59) {
+  tab <- knn.scaled.kfcv(target = "quality", dd = training.data[,-13], num.neighbors = i)
+  kNN.kfcv.err <- 1 - sum(tab[row(tab) == col(tab)])/sum(tab)
+  kfcv.err <- c(kfcv.err, kNN.kfcv.err)
+}
+plot(c(1:59), kfcv.err, xlab = "number of neighbors")
+(k.min <- which.min(kfcv.err))
+kfcv.err[k.min]*100
+```
+
+```{r}
+# original scale data
+kfcv.err <- NULL
+for (i in 1:59) {
+  tab <- knn.original.kfcv(target = "quality", dd = training.data[,-13], num.neighbors = i)
+  kNN.kfcv.err <- 1 - sum(tab[row(tab) == col(tab)])/sum(tab)
+  kfcv.err <- c(kfcv.err, kNN.kfcv.err)
+}
+plot(c(1:59), kfcv.err, xlab = "number of neighbors")
+(k.min <- which.min(kfcv.err))
+kfcv.err[k.min]*100
 ```
 
 
 #### Ordinal Regression
 ```{r}
-ordreg.model <- train(quality~., 
-    data = training.data, 
-    method = "polr", 
-    trControl = trainControl(method = "CV", number = 10))
-
-(tab <- table(truth=training.data$quality, pred=predict(ordreg.model)))
-(ordreg.err <- 1 - sum(tab[col(tab)==row(tab)])/sum(tab))
+# set.seed(our_seed)
+# training.data$quality <- as.factor(training.data$quality)
+# k <- 10
+# 
+# ordreg.kfcv <- function(target, dd, nfolds = 10, seed = 46290) {
+#   set.seed(seed)
+#   rownames(dd) <- NULL
+#   n <- nrow(dd)
+#   folds <- createFolds(seq_len(n), k = nfolds, list = TRUE)
+#   
+#   cv.err <- NULL
+#   t <- NULL
+#   p <- NULL
+#   
+#   for (fold in folds) {
+#     adj.data <- dd[-fold,]
+#     val <- dd[fold,]
+#     fmla <- as.formula(paste(target,"~."))
+#     predicted.class <- polr(fmla, data = adj.data) %>% predict(newdata = val)
+#     t <- c(t, val[,target])
+#     p <- c(p, predicted.class)
+#   }
+#   tab <- table(Truth = t, Pred = p)
+# }
+# 
+# (tab <- ordreg.kfcv(target = "quality", training.data, nfolds = 10))
+# (ordreg.kfcv.err <- 1 - sum(tab[row(tab)==col(tab)])/sum(tab))
 ```
 
 
@@ -646,9 +728,9 @@ preds <- round(predict(quality.lm.model))
 ##### Ridge (L^2-regularized)
 
 ```{r}
-lambdas <- seq(6.5,7,0.01)
+lambdas <- seq(28,29,0.001)
 
-model.ridge <- lm.ridge(quality~., data = training.data, lambda = lambdas)
+model.ridge <- lm.ridge(training.data$quality~., data = as.data.frame(scale(training.data[,1:11])), lambda = lambdas)
 plot(lambdas, model.ridge$GCV, main="GCV of Ridge Regression", type="l", 
      xlab=expression(lambda), ylab="GCV")
 
@@ -668,10 +750,9 @@ ridge.kfcv <- function(target, dd, nfolds = 10, seed = 46290) {
   t <- NULL
   p <- NULL
   for (fold in folds) {
-    adj.data <- dd[-fold,]
-    val <- dd[fold,]
-    fmla <- as.formula(paste(target,"~."))
-    ridge.mod <- lm.ridge(fmla, data = adj.data, lambda = lambda.ridge)
+    adj.data <- as.data.frame(scale(dd[-fold,1:11]))
+    val <- scale(dd[fold,1:11])
+    ridge.mod <- lm.ridge(dd$quality~., data = adj.data, lambda = lambda.ridge)
     beta.ridge <- coef(ridge.mod)
     temp.ridge.pred <- beta.ridge[1] + as.matrix(val[,1:11]) %*% beta.ridge[2:12]
     ridge.pred <- round(temp.ridge.pred)
@@ -681,8 +762,8 @@ ridge.kfcv <- function(target, dd, nfolds = 10, seed = 46290) {
   mse <- mean((t-p)^2)
 }
 
-(ridge.kfcv.err <- ridge.kfcv("quality", training.data))
-
+(ridge.kfcv.err <- ridge.kfcv("training.data$quality", training.data))
+lambda.ridge
 ```
 
 
@@ -692,24 +773,13 @@ ridge.kfcv <- function(target, dd, nfolds = 10, seed = 46290) {
 library(Matrix)
 library(glmnet)
 
-t <- as.matrix(training.data[,1:11], ncol = 11)
+t <- as.matrix(scale(training.data[,1:11]), ncol = 11)
 
-training.w <- t[training.data$type == "w",]
-training.r <- t[training.data$type == "r",]
+model.lasso <- cv.glmnet(t, as.numeric(training.data$quality), nfolds = 10)
 
-model.lasso.red <- cv.glmnet(as.matrix(training.w), as.numeric(training.data[training.data$type == "w",]$quality), nfolds = 10)
-model.lasso.white <- cv.glmnet(as.matrix(training.r), as.numeric(training.data[training.data$type == "r",]$quality), nfolds = 10)
+(lambda.lasso <- model.lasso$lambda.min)
 
-(lambda.lasso.w <- model.lasso.white$lambda.min)
-(lambda.lasso.r <- model.lasso.red$lambda.min)
-
-plot(model.lasso.red)
-red.kfcv.err <- model.lasso.red$cvm[model.lasso.red$lambda == lambda.lasso.r]
-white.kfcv.err <- model.lasso.red$cvm[model.lasso.red$lambda == lambda.lasso.r]
-
-n.red <- nrow(training.r)
-n.white <- nrow(training.w)
-
-(LASSO.kfcv.err <- (n.red * red.kfcv.err + n.white * white.kfcv.err)/( n.red + n.white ) ) # error total, diria que la fórmula és correcta.
+plot(model.lasso)
+(LASSO.kfcv.err <- model.lasso$cvm[model.lasso$lambda == lambda.lasso])
 ```
 

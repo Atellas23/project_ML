@@ -49,13 +49,19 @@
 \begin{document}
 \begingroup
   \centering
-  \Huge Wine type and quality determination \\
-  \vskip 0.35cm
-  \LARGE Final delivery\\
-  \vskip 0.25cm
-  \large Aleix Torres i Camps, Àlex Batlle Casellas, Luís Sierra Muntané\\[1.5em]
+  \LARGE APRENENTATGE AUTOMÀTIC 1\\
+  \vskip 7cm
+  \Huge  {\scshape Wine type and quality determination}
+  \vskip 9cm
+  \large {Aleix Torres i Camps, Luís Sierra Muntané, Àlex Batlle Casellas} \\
+  \vskip 2cm
+  \large {Data Science and Engineering, UPC Spring 2020}\\
+[1.5em]
 \endgroup
+\newpage
 
+\tableofcontents
+\newpage
 
 \section{Description and goals of the project.}
 Our goal with this project is that of obtaining a data-driven understanding of the relationships between the chemical characteristics of wine and features such as its colour or quality. The data in question is \href{http://archive.ics.uci.edu/ml/datasets/Wine+Quality}{this data set} featuring Portuguese wines of the \textit{Vinho Verde} region and claims to have 4898 instances of wines, even though after looking at the dataset we saw there actually were 6497, and 12 attributes as physicochemical properties of the wine: \verb|fixed acidity|, \verb|volatile acidity|, \verb|citric acid|, \verb|residual sugar|, \verb|chlorides|, \verb|free sulfur dioxide|, \verb|total sulfur dioxide|, \verb|density|, \verb|pH|, \verb|sulphates|, \verb|alcohol|, and \verb|quality| (score between 0 and 10) which is the output variable based on sensory data.
@@ -270,22 +276,42 @@ Real 9 & 0 & 0 & 0 & 1 & 3 & 0 & 0
 \end{table}
 We can see that this is a pretty bad model, maybe due to the classes being unbalanced as we have said before.
 
-\paragraph{kNN:} So, now on to kNN again. This time, when we check the LOOCV errors to see what is the kNN method (original data, scaled data and LD-projected data) that gives better results, as we did before with the type classification, we see that it is again the one using LD-projected data. So, again our 10-fold cross-validation error function will project the data on to LD space and then perform the kNN classification on this data. Also, we have chosen the $k$ as before, but the minimum is now around $k=55$. To choose the appropriate $k$, we loop over the interval $[50,59]$ and choose the $k$ with the least cross-validation error; we bound the interval with 59 as it is approximately the square root of the number of rows in the training set, and this is a well-known boundary for the number of neighbors.
+\paragraph{kNN:} So, now on to kNN again. This time, when we check the LOOCV errors to see what is the kNN method (original data, scaled data and LD-projected data) that gives better results, as we did before with the type classification, we see that it is again the one using LD-projected data. So, again our 10-fold cross-validation error function will project the data on to LD space and then perform the kNN classification on this data. Also, we have chosen the $k$ as before, but the minimum is now around $k=55$. To choose the appropriate $k$ for the model, we loop over the interval $[1,59]$ and choose the $k$ with the least cross-validation error; we bound the interval with 59 as it is approximately the square root of the number of rows in the training set, and this is a well-known boundary for the number of neighbors. We plotted the results in the graphic below.
 
+\begin{figure}[H]
+\centering
+\caption{kNN CV error using LD-projected data}
+\includegraphics[scale=0.5]{kNN_kfcv_err_qclass}
+\end{figure}
 
-
+The minimum here is attained at $k=8$ neighbors, where the CV error is around 49.18\%. Again, this model is not able to predict accurately the quality of the wine. Given the distribution of the values in the data set, the algorithm tends to predict mediocre scores for the wines. In other words, given that there are very few outlier wines in the original data set (only five wines had a score of 9) the algorithm cannot predict such a score for wines in the data set. As such, this method is very poor at finding outliers and so it is only partially effective at predicting the score of a wine.
 
 \subsubsection{Regression}
 
-To predict the wine quality, as expressed above, we used the mwthods of \textbf{LDA}, \textbf{QDA}, \textbf{RDA}, and used the \textbf{kNN} algorithm.\\
+Instead of trying to solve the quality problem using classification methods, another possibility is that of trying to do so using some kind of regression algorithm. The reason for this is that of trying to make use of the ordinal structure of the classes, in the sense that two "good" wines valued with a score of 7 and 8 could be more similar amongst themselves than to a third wine with a lower score. That being said, due to the different units and scales among the attributes, the data was first standardised in order to perform the regression analysis without the aforestated concerns.
 
-Using \textbf{Linear Regression}, we got a testing error of 79.7\%.\\
+\paragraph{LASSO:}
 
-When performing a \textbf{LDA} and classifying according to the most likely class an accuracy of 0.5496614 was obtained, while for \textbf{QDA} some of the groups were to small in order to be able to perform the analysis accurately, given that the covariance matrix is to be estimated. For instance, the number of wines with a score of 9 was less than the total number of categories, and so this analysis could not be performed with the entirety of the data.\\
+Firstly, considering a LASSO regression using all of the predictor variables, the model with the least mean squared error after the cross validation had a value of the penalizing parameter $\lambda$ being 0.9. Moreover, the MSE of such model was 0.71 and an R-squared value of 0.21, which points towards the fact that the variables are necessary but not enough to explain the variability in the dataset, but more variables are needed in order to fully explain the information contained in the sample.
 
-For the \textbf{kNN} algorithm, given that the colour variable is a factor type variable, it cannot be directly included to perform the algorithm, as such, two possibilities were considered: that of treating it as a numeric variable equal to 0 or 1 for the two colours, and to disregard the variable completely. In both cases, the algorithm gave similar test accuracies: 0.471219 and 0.46614 respectively when considering the $k=10$ nearest neighbours.\\
+\paragraph{Ridge Regression:}
 
-Given the distribution of the values in the data set, the algorithm tends to predict mediocre scores for the wines. In other words, given that there were very few outlier wines in the original data set (only five wines had a score of 9) the algorithm cannot predict such a score for wines in the data set. As such, this method is very poor at finding outliers and so it is only partially effective at predicting the score of a wine.
+In a similar fashion to the LASSO regression, a ridge regression was used to fit the data and the model that produced the lowest error was selected after the round of cross-validation. This minimum error produced was found with a penalising parameter of $\lambda=6.7$.
+
+\paragraph{MLP:}
+
+A multi-layered-perceptron model was trained by considering a regularised network similar to the one used for classification, where a number of hidden units were fixed and the model was regularised using weight decay. The model with the lowest final mean squared error was of size 5 (a single hidden layer with 5 perceptrons) and had a MSE of 0.85 and an R-squared of 0.31.
+
+\paragraph{Random Forest:}
+
+When considering a random forest for regression, the results over the training data were found by measuring the least out-of-bag error over the models while iterating over the number of variables to split at each node, comparing the mean squared error of each model. The number of splitting variables yielding the minimum error was 2 with a root mean square error of 0.78, where splitting over more variables failed to improve on such values, possibly due to lower generalisation. The R-squared value of the preferred model was 0.40.
+
+\paragraph{RBF:}
+
+Now, to use a Radial Basis Function model on the data we considered a number of prototypical examples selected using a non-supervised clustering algorithm and then implemented the RBF using those starting points. The number of prototypes was determined via the cross-validation method, as usual, and the model selected was the one with the smallest error. The final values were attained after around 4000 iterations and using 354 prototypes, with a final error of 0.96.
+
+Therefore, we can consider the LASSO regression model to be the best since it has the lowest overall MSE out of the models considered.
+
 \section{Final Model \& Estimated generalization error.}
 \subsection{Wine type best model}
 Regarding all the models we have considered, the decision of which we have to select is quite straight-forward as there is a model with the smallest error. We have to note that all the models have a pretty small cross-validation error, being the MLP the greatest. It is very likely that this last model overfits the data. This is a summary of all the models we have considered alongside with their respective errors:
@@ -315,15 +341,27 @@ Real Red  & 9 & 1301
 \end{tabular}
 \end{table}
 
+As can be seen, test error is quite larger than the training error. Although this is expected behavior, it may imply that the model overfits a bit the data. To verify it, we proceeded to replicate this procedure 100000 times. In particular, we randomly split the dataset into 2/3 for training and 1/3 for testing. Then, using the training set, predict the testing set as we did before to obtain the error of each iteration. Finally, with all the errors, we plot the following histogram:
 
+\begin{figure}[H]
+\centering
+\caption{Histogram of the \% Error of testing 10000 times}
+\includegraphics[scale=0.5]{histogramaErrors}
+\end{figure}
 
-\subsection{ best model}
+It appears that the \% testing errors adjust to a normal distribution centered at 0.56\%. Indeed, the most common error is this which corresponds to 10 misclassified observations. Therefore, the test error that we first obtained was greater than the mean, so the model we chose did not overfit at all.
 
-\section{Scientific and personal conclusions.}
-\section{Possible extensions and known limitations.}
+\subsection{Wine quality best model}
+
+\section{Conclusions.}
+\subsection{Scientific and personal conclusions.}
+We have attained pretty good results in the type classification; surely there are different explanations regarding this, but we think it is mostly due to the notable chemical differences between both classes of wine. We observed these differences back in the data exploration section, and they allow quite a good separation as we have seen. Also, our final classification model performed quite well on the testing data set, with an estimated generalization error of less than 1\%. We consider it to be an interesting model, as it is a combination of two steps, a dimensionality reduction step and the classification step in itself.\\
+
+In the quality prediction, things have not been as good for the classification approach as they have been for the type classification. We think that this is mainly due to the fact that the multiple "classes" (from 1 to 10) were very unbalanced, and hindered our models very much. In the kNN model in particular, we tried the three approaches (as can be seen in the code), and only the scaled data approach worked better than LD-projected data, by just 1\% of the CV error. For the regression approach,
+\subsection{Possible extensions and known limitations.}
 %\section{Future approaches.}
 %To accomplish a \textbf{good and simple method}, we will continue trying the methods we already mention. Reducing the number of input variables, adding some extracted variables or with small variations of the methods (like applying \textit{pca} or \textit{lda} before \textit{glm} or \textbf{ridge regression}). In addition, we will consider other methods for classification as well for data exploration. For example, using \textbf{Random Forest}, \textbf{neural networks} or \textbf{clustering}.
-\section{References:}
+\section{References.}
 \begin{enumerate}
   \item Web page where the data set can be found:
 

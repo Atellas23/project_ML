@@ -1,0 +1,29 @@
+\babel@toc {english}{}
+\contentsline {section}{\numberline {1}Description and goals of the project.}{3}{section.1}% 
+\contentsline {section}{\numberline {2}Related previous work.}{3}{section.2}% 
+\contentsline {section}{\numberline {3}Data exploration.}{4}{section.3}% 
+\contentsline {section}{\numberline {4}Resampling protocol \& Modeling methods considered.}{7}{section.4}% 
+\contentsline {section}{\numberline {5}Obtained results.}{7}{section.5}% 
+\contentsline {subsection}{\numberline {5.1}Wine type prediction}{7}{subsection.5.1}% 
+\contentsline {paragraph}{Discriminant Analysis:}{7}{section*.8}% 
+\contentsline {paragraph}{$k$ Nearest Neighbors:}{8}{section*.10}% 
+\contentsline {paragraph}{Logistic Regression:}{9}{section*.15}% 
+\contentsline {paragraph}{Multi-Layer Perceptron:}{9}{section*.17}% 
+\contentsline {paragraph}{Random Forest:}{9}{section*.19}% 
+\contentsline {subsection}{\numberline {5.2}Wine quality prediction}{10}{subsection.5.2}% 
+\contentsline {subsubsection}{\numberline {5.2.1}Classification}{10}{subsubsection.5.2.1}% 
+\contentsline {paragraph}{Discriminant Analysis:}{10}{section*.21}% 
+\contentsline {paragraph}{kNN:}{10}{section*.23}% 
+\contentsline {subsubsection}{\numberline {5.2.2}Regression}{11}{subsubsection.5.2.2}% 
+\contentsline {paragraph}{LASSO:}{11}{section*.25}% 
+\contentsline {paragraph}{Ridge Regression:}{11}{section*.26}% 
+\contentsline {paragraph}{MLP:}{11}{section*.27}% 
+\contentsline {paragraph}{Random Forest:}{11}{section*.28}% 
+\contentsline {paragraph}{RBF}{12}{section*.29}% 
+\contentsline {section}{\numberline {6}Final Model \& Estimated generalization error.}{12}{section.6}% 
+\contentsline {subsection}{\numberline {6.1}Wine type best model}{12}{subsection.6.1}% 
+\contentsline {subsection}{\numberline {6.2}Wine quality best model}{13}{subsection.6.2}% 
+\contentsline {section}{\numberline {7}Conclusions.}{13}{section.7}% 
+\contentsline {subsection}{\numberline {7.1}Scientific and personal conclusions.}{13}{subsection.7.1}% 
+\contentsline {subsection}{\numberline {7.2}Possible extensions and known limitations.}{13}{subsection.7.2}% 
+\contentsline {section}{\numberline {8}References.}{13}{section.8}% 
